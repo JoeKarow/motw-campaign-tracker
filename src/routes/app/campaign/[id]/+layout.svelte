@@ -8,7 +8,7 @@
 	let effectiveRole = $derived(devOverrides.roleOverride ?? data.userRole);
 
 	let myHunter = $derived(
-		data.campaign.hunters.find((h: any) => h.userId === data.userId)
+		data.campaign.hunters.find((h) => h.userId === data.userId)
 	);
 </script>
 

@@ -93,7 +93,7 @@
 				<summary class="cursor-pointer text-surface-400 text-sm">Attendance ({session.attendees.length})</summary>
 				<div class="flex flex-wrap gap-2 mt-2">
 					{#each data.hunters as hunter (hunter.id)}
-						{@const attending = session.attendees.some((a: any) => a.hunterId === hunter.id)}
+						{@const attending = session.attendees.some((a) => a.hunterId === hunter.id)}
 						<form method="POST" action="?/toggleAttendance" use:enhance class="inline">
 							<input type="hidden" name="sessionId" value={session.id} />
 							<input type="hidden" name="hunterId" value={hunter.id} />
@@ -110,7 +110,7 @@
 				<summary class="cursor-pointer text-surface-400 text-sm">NPCs ({session.npcAppearances.length})</summary>
 				<div class="flex flex-wrap gap-2 mt-2">
 					{#each data.npcs as npc (npc.id)}
-						{@const appearing = session.npcAppearances.some((a: any) => a.npcId === npc.id)}
+						{@const appearing = session.npcAppearances.some((a) => a.npcId === npc.id)}
 						<form method="POST" action="?/toggleNpcAppearance" use:enhance class="inline">
 							<input type="hidden" name="sessionId" value={session.id} />
 							<input type="hidden" name="npcId" value={npc.id} />

@@ -1,5 +1,7 @@
 <script lang="ts">
-	let { clues }: { clues: any[] } = $props();
+	import type { ClueModel } from '$lib/generated/prisma/models/Clue';
+
+	let { clues }: { clues: ClueModel[] } = $props();
 </script>
 
 <div class="flex flex-col gap-2">

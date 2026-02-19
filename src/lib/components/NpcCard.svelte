@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { badgePreset } from '$lib/badge-preset';
+	import type { NpcModel } from '$lib/generated/prisma/models/Npc';
 
-	let { npc, onstatuschange }: { npc: any; onstatuschange?: (status: string) => void } = $props();
+	let { npc, onstatuschange }: { npc: NpcModel; onstatuschange?: (status: string) => void } = $props();
 
 	const statuses = ['ALIVE', 'DEAD', 'MISSING', 'UNKNOWN'];
 </script>

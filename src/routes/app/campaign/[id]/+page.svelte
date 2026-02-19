@@ -5,7 +5,7 @@
 	let { data }: { data: PageData } = $props();
 	let campaign = $derived(data.campaign);
 	let isGM = $derived(data.userRole === 'GM');
-	let myHunter = $derived(campaign.hunters.find((h: any) => h.userId === data.userId));
+	let myHunter = $derived(campaign.hunters.find((h) => h.userId === data.userId));
 </script>
 
 <div class="flex justify-between items-center mb-6">
@@ -32,7 +32,7 @@
 		<h3 class="h3">Mysteries</h3>
 		<p class="text-3xl font-bold text-primary-500">{campaign.mysteries.length}</p>
 		<div class="text-xs text-surface-400">
-			{campaign.mysteries.filter((m: any) => m.status === 'ACTIVE').length} active
+			{campaign.mysteries.filter((m) => m.status === 'ACTIVE').length} active
 		</div>
 		{#if isGM}
 			<a href="/app/campaign/{campaign.id}/mystery/new" class="btn preset-filled-primary-500 mt-3">New Mystery</a>
@@ -43,7 +43,7 @@
 		<h3 class="h3">NPCs</h3>
 		<p class="text-3xl font-bold text-primary-500">{campaign.npcs.length}</p>
 		<div class="text-xs text-surface-400">
-			{campaign.npcs.filter((n: any) => n.status === 'ALIVE').length} alive
+			{campaign.npcs.filter((n) => n.status === 'ALIVE').length} alive
 		</div>
 		{#if isGM}
 			<a href="/app/campaign/{campaign.id}/npc" class="btn preset-filled-primary-500 mt-3">View NPCs</a>

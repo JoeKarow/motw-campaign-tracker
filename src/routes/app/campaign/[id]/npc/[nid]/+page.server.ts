@@ -2,6 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
 import { requireGM } from '$lib/server/campaign-auth';
+import type { NpcStatus } from '$lib/generated/prisma/enums';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { campaign } = await parent();
@@ -21,7 +22,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	if (!npc) throw error(404, 'NPC not found');
 
-	const otherNpcs = campaign.npcs.filter((n: any) => n.id !== npc.id);
+	const otherNpcs = campaign.npcs.filter((n) => n.id !== npc.id);
 
 	return { npc, otherNpcs };
 };
@@ -37,7 +38,7 @@ export const actions: Actions = {
 				name: formData.get('name')?.toString()?.trim() || undefined,
 				description: formData.get('description')?.toString()?.trim() || null,
 				notes: formData.get('notes')?.toString()?.trim() || null,
-				status: formData.get('status')?.toString() as any
+				status: formData.get('status')?.toString() as NpcStatus
 			}
 		});
 

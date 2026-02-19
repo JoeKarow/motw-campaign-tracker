@@ -1,5 +1,7 @@
 <script lang="ts">
 	import ClueList from './ClueList.svelte';
+	import type { SceneModel } from '$lib/generated/prisma/models/Scene';
+	import type { ClueModel } from '$lib/generated/prisma/models/Clue';
 
 	let {
 		scenes,
@@ -7,7 +9,7 @@
 		onnavigate,
 		onaddclue
 	}: {
-		scenes: any[];
+		scenes: (SceneModel & { clues: ClueModel[] })[];
 		currentIndex: number;
 		onnavigate: (index: number) => void;
 		onaddclue?: (sceneId: string, description: string) => void;
