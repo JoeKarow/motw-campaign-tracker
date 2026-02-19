@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { admin } from 'better-auth/plugins';
 import { prisma } from '$lib/server/prisma';
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$env/static/private';
 
@@ -13,5 +14,6 @@ export const auth = betterAuth({
 			clientId: DISCORD_CLIENT_ID,
 			clientSecret: DISCORD_CLIENT_SECRET
 		}
-	}
+	},
+	plugins: [admin()]
 });

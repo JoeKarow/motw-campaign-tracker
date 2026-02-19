@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { prisma } from '$lib/server/prisma';
-import type { CampaignRole } from '@prisma/client';
+import type { CampaignRole } from '$lib/generated/prisma/client';
 
 export async function requireCampaignMember(
 	userId: string | undefined,

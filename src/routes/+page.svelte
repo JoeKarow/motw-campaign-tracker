@@ -12,7 +12,7 @@
 	{:else}
 		<h1 class="h1">Monster of the Week Tracker</h1>
 		<p class="text-surface-400 mb-4">Track your campaigns, mysteries, hunters, and NPCs.</p>
-		<button class="btn preset-filled-primary-500" onclick={() => authClient.signIn.social({ provider: 'discord' })}>
+		<button class="btn preset-filled-primary-500" onclick={() => authClient.signIn.social({ provider: 'discord', callbackURL: '/app' })}>
 			Sign in with Discord
 		</button>
 	{/if}
