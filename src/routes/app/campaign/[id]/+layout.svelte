@@ -24,7 +24,7 @@
 			{#if effectiveRole === 'GM'}
 				<a href="/app/campaign/{data.campaign.id}/mystery/new" class="btn btn-sm preset-outlined-surface-300-700">Mysteries</a>
 				<a href="/app/campaign/{data.campaign.id}/npc" class="btn btn-sm preset-outlined-surface-300-700">NPCs</a>
-				<a href="/app/campaign/{data.campaign.id}/hunter/{data.campaign.hunters[0]?.id ?? ''}" class="btn btn-sm preset-outlined-surface-300-700">Hunters</a>
+				<a href="/app/campaign/{data.campaign.id}/hunter" class="btn btn-sm preset-outlined-surface-300-700">Hunters</a>
 				<a href="/app/campaign/{data.campaign.id}/invite" class="btn btn-sm preset-outlined-surface-300-700">Members</a>
 			{:else}
 				<a href="/app/campaign/{data.campaign.id}/mystery/new" class="btn btn-sm preset-outlined-surface-300-700">Mysteries</a>
@@ -33,7 +33,7 @@
 				{:else}
 					<a href="/app/campaign/{data.campaign.id}/hunter/new" class="btn btn-sm preset-filled-primary-500">Create Hunter</a>
 				{/if}
-				<a href="/app/campaign/{data.campaign.id}/hunter/{data.campaign.hunters[0]?.id ?? ''}" class="btn btn-sm preset-outlined-surface-300-700">Hunters</a>
+				<a href="/app/campaign/{data.campaign.id}/hunter" class="btn btn-sm preset-outlined-surface-300-700">Hunters</a>
 			{/if}
 		</nav>
 	</div>

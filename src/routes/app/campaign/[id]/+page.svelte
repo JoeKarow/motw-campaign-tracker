@@ -53,7 +53,7 @@
 	<div class="card p-4">
 		<h3 class="h3">Hunters</h3>
 		<p class="text-3xl font-bold text-primary-500">{campaign.hunters.length}</p>
-		<a href="/app/campaign/{campaign.id}/hunter/{campaign.hunters[0]?.id ?? ''}" class="btn preset-filled-primary-500 mt-3">View Hunters</a>
+		<a href="/app/campaign/{campaign.id}/hunter" class="btn preset-filled-primary-500 mt-3">View Hunters</a>
 	</div>
 </div>
 
