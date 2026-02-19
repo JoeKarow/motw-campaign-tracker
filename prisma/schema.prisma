@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Auth tables (better-auth) ──────────────────────────────────────
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  hunters  Hunter[]
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
+
+// ── Domain models ──────────────────────────────────────────────────
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  mysteries Mystery[]
+  npcs      Npc[]
+  hunters   Hunter[]
+}
+
+enum MysteryStatus {
+  ACTIVE
+  RESOLVED
+  ABANDONED
+}
+
+model Mystery {
+  id              String        @id @default(cuid())
+  title           String
+  monsterType     String?
+  location        String?
+  status          MysteryStatus @default(ACTIVE)
+  monsterWeakness String?
+  howItWasKilled  String?
+  campaignId      String
+
+  campaign Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  sessions GameSession[]
+}
+
+model GameSession {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  title     String
+  summary   String?
+  isActive  Boolean  @default(false)
+  mysteryId String
+
+  mystery    Mystery             @relation(fields: [mysteryId], references: [id], onDelete: Cascade)
+  scenes     Scene[]
+  attendees  SessionAttendance[]
+  npcAppearances NpcAppearance[]
+}
+
+model Scene {
+  id          String  @id @default(cuid())
+  order       Int
+  title       String
+  description String?
+  sessionId   String
+
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  clues   Clue[]
+}
+
+model Clue {
+  id           String   @id @default(cuid())
+  description  String
+  significance String?
+  createdAt    DateTime @default(now())
+  sceneId      String
+
+  scene Scene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+}
+
+enum NpcStatus {
+  ALIVE
+  DEAD
+  MISSING
+  UNKNOWN
+}
+
+model Npc {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  notes       String?
+  status      NpcStatus @default(ALIVE)
+  campaignId  String
+
+  campaign      Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  relationships NpcRelationship[] @relation("subject")
+  relatedTo     NpcRelationship[] @relation("object")
+  appearances   NpcAppearance[]
+}
+
+model NpcRelationship {
+  id        String @id @default(cuid())
+  label     String
+  subjectId String
+  objectId  String
+
+  subject Npc @relation("subject", fields: [subjectId], references: [id], onDelete: Cascade)
+  object  Npc @relation("object", fields: [objectId], references: [id], onDelete: Cascade)
+}
+
+model NpcAppearance {
+  id        String @id @default(cuid())
+  npcId     String
+  sessionId String
+
+  npc     Npc         @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([npcId, sessionId])
+}
+
+model SessionAttendance {
+  id        String @id @default(cuid())
+  sessionId String
+  hunterId  String
+
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  hunter  Hunter      @relation(fields: [hunterId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, hunterId])
+}
+
+model Hunter {
+  id        String @id @default(cuid())
+  name      String
+  playbook  String
+  charmMod  Int    @default(0)
+  coolMod   Int    @default(0)
+  sharpMod  Int    @default(0)
+  toughMod  Int    @default(0)
+  weirdMod  Int    @default(0)
+  harm      Int    @default(0)
+  harmMax   Int    @default(7)
+  luck      Int    @default(7)
+  xp        Int    @default(0)
+  moves     Json   @default("[]")
+  gear      Json   @default("[]")
+  bonds     Json   @default("[]")
+  look      String?
+  userId    String
+  campaignId String
+
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign   Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  attendance SessionAttendance[]
+}
