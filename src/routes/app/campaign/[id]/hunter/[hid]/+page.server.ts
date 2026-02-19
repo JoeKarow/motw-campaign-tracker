@@ -1,8 +1,11 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { requireCampaignMember } from '$lib/server/campaign-auth';
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	const { role } = await requireCampaignMember(locals.user?.id, params.id);
+
 	const hunter = await prisma.hunter.findUnique({
 		where: { id: params.hid },
 		include: { user: true }
@@ -10,11 +13,21 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	if (!hunter) throw error(404, 'Hunter not found');
 
-	return { hunter };
+	const canEdit = locals.user!.id === hunter.userId || role === 'GM';
+
+	return { hunter, canEdit };
 };
 
 export const actions: Actions = {
-	update: async ({ request, params }) => {
+	update: async ({ request, params, locals }) => {
+		const { role } = await requireCampaignMember(locals.user?.id, params.id);
+
+		const hunter = await prisma.hunter.findUnique({ where: { id: params.hid } });
+		if (!hunter) throw error(404, 'Hunter not found');
+		if (locals.user!.id !== hunter.userId && role !== 'GM') {
+			throw error(403, 'You can only edit your own hunter');
+		}
+
 		const formData = await request.formData();
 
 		const getInt = (name: string, fallback: number) => {

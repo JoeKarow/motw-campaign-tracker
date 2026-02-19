@@ -4,20 +4,23 @@
 	import { badgePreset } from '$lib/badge-preset';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let isGM = $derived(data.userRole === 'GM');
 </script>
 
 <div class="flex justify-between items-center mb-6">
 	<h1 class="h1">NPCs</h1>
 </div>
 
-<form method="POST" action="?/create" use:enhance class="flex gap-2 items-center mb-6">
-	<input class="input flex-1" name="name" placeholder="NPC name..." required />
-	<input class="input flex-1" name="description" placeholder="Description (optional)" />
-	<button type="submit" class="btn preset-filled-primary-500">Add NPC</button>
-</form>
+{#if isGM}
+	<form method="POST" action="?/create" use:enhance class="flex gap-2 items-center mb-6">
+		<input class="input flex-1" name="name" placeholder="NPC name..." required />
+		<input class="input flex-1" name="description" placeholder="Description (optional)" />
+		<button type="submit" class="btn preset-filled-primary-500">Add NPC</button>
+	</form>
 
-{#if form?.error}
-	<p class="text-error-500 text-sm">{form.error}</p>
+	{#if form?.error}
+		<p class="text-error-500 text-sm">{form.error}</p>
+	{/if}
 {/if}
 
 {#if data.npcs.length === 0}

@@ -15,7 +15,12 @@
 	<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 		{#each data.campaigns as campaign (campaign.id)}
 			<a href="/app/campaign/{campaign.id}" class="card p-4 hover:ring-1 hover:ring-primary-500 transition-all no-underline">
-				<h3 class="h3">{campaign.name}</h3>
+				<div class="flex justify-between items-center">
+					<h3 class="h3">{campaign.name}</h3>
+					{#if campaign.userRole}
+						<span class="badge {campaign.userRole === 'GM' ? 'preset-filled-primary-500' : 'preset-filled-surface-500'}">{campaign.userRole}</span>
+					{/if}
+				</div>
 				<div class="flex gap-4 mt-2 text-xs text-surface-400">
 					<span>{campaign._count.mysteries} mysteries</span>
 					<span>{campaign._count.hunters} hunters</span>

@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { requireGM } from '$lib/server/campaign-auth';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { campaign } = await parent();
@@ -28,7 +29,8 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 };
 
 export const actions: Actions = {
-	updateStatus: async ({ request, params }) => {
+	updateStatus: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const status = formData.get('status')?.toString() as 'ACTIVE' | 'RESOLVED' | 'ABANDONED';
 		const monsterWeakness = formData.get('monsterWeakness')?.toString()?.trim() || null;
@@ -42,7 +44,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	createSession: async ({ request, params }) => {
+	createSession: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const title = formData.get('title')?.toString()?.trim();
 		if (!title) return fail(400, { error: 'Session title is required' });
@@ -57,7 +60,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	updateSession: async ({ request }) => {
+	updateSession: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const sessionId = formData.get('sessionId')?.toString();
 		const summary = formData.get('summary')?.toString()?.trim() || null;
@@ -81,7 +85,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	addScene: async ({ request }) => {
+	addScene: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const sessionId = formData.get('sessionId')?.toString();
 		const title = formData.get('title')?.toString()?.trim();
@@ -104,7 +109,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	addClue: async ({ request }) => {
+	addClue: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const sceneId = formData.get('sceneId')?.toString();
 		const description = formData.get('description')?.toString()?.trim();
@@ -121,7 +127,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	toggleAttendance: async ({ request }) => {
+	toggleAttendance: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const sessionId = formData.get('sessionId')?.toString()!;
 		const hunterId = formData.get('hunterId')?.toString()!;
@@ -139,7 +146,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	toggleNpcAppearance: async ({ request }) => {
+	toggleNpcAppearance: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const sessionId = formData.get('sessionId')?.toString()!;
 		const npcId = formData.get('npcId')?.toString()!;

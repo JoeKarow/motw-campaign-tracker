@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { requireGM } from '$lib/server/campaign-auth';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const npcs = await prisma.npc.findMany({
@@ -15,7 +16,8 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	create: async ({ request, params }) => {
+	create: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const name = formData.get('name')?.toString()?.trim();
 		if (!name) return fail(400, { error: 'Name is required' });

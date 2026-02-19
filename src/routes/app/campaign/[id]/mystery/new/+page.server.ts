@@ -1,9 +1,11 @@
 import { redirect, fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { requireGM } from '$lib/server/campaign-auth';
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const title = formData.get('title')?.toString()?.trim();
 		const monsterType = formData.get('monsterType')?.toString()?.trim() || null;

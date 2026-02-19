@@ -17,9 +17,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  sessions Session[]
-  accounts Account[]
-  hunters  Hunter[]
+  sessions       Session[]
+  accounts       Account[]
+  hunters        Hunter[]
+  memberships    CampaignMember[]
+  createdInvites CampaignInvite[] @relation("inviteCreator")
 }
 
 model Session {
@@ -74,6 +76,40 @@ model Campaign {
   mysteries Mystery[]
   npcs      Npc[]
   hunters   Hunter[]
+  members   CampaignMember[]
+  invites   CampaignInvite[]
+}
+
+enum CampaignRole {
+  GM
+  PLAYER
+}
+
+model CampaignMember {
+  id         String       @id @default(cuid())
+  userId     String
+  campaignId String
+  role       CampaignRole
+  joinedAt   DateTime     @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaignId])
+}
+
+model CampaignInvite {
+  id         String    @id @default(cuid())
+  code       String    @unique @default(cuid())
+  campaignId String
+  createdBy  String
+  expiresAt  DateTime?
+  maxUses    Int?
+  uses       Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  creator  User     @relation("inviteCreator", fields: [createdBy], references: [id])
 }
 
 enum MysteryStatus {

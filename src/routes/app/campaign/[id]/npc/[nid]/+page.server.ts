@@ -1,6 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
+import { requireGM } from '$lib/server/campaign-auth';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { campaign } = await parent();
@@ -26,7 +27,8 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 };
 
 export const actions: Actions = {
-	update: async ({ request, params }) => {
+	update: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 
 		await prisma.npc.update({
@@ -42,7 +44,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	addRelationship: async ({ request, params }) => {
+	addRelationship: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const label = formData.get('label')?.toString()?.trim();
 		const objectId = formData.get('objectId')?.toString();
@@ -59,7 +62,8 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
-	removeRelationship: async ({ request }) => {
+	removeRelationship: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 		const relationshipId = formData.get('relationshipId')?.toString();
 		if (!relationshipId) return fail(400, { error: 'Relationship ID required' });
