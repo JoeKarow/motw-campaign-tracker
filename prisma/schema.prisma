@@ -3,6 +3,14 @@ generator client {
   output   = "../src/lib/generated/prisma"
 }
 
+generator json {
+  provider     = "prisma-json-types-generator"
+  clientOutput = "../src/lib/generated/prisma"
+  namespace    = "PrismaJson"
+  allowAny     = false
+  // etc...
+}
+
 datasource db {
   provider = "postgresql"
 }
@@ -134,7 +142,7 @@ model Mystery {
   howItWasKilled  String?
   campaignId      String
 
-  campaign Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   sessions GameSession[]
 }
 
@@ -146,9 +154,9 @@ model GameSession {
   isActive  Boolean  @default(false)
   mysteryId String
 
-  mystery    Mystery             @relation(fields: [mysteryId], references: [id], onDelete: Cascade)
-  scenes     Scene[]
-  attendees  SessionAttendance[]
+  mystery        Mystery             @relation(fields: [mysteryId], references: [id], onDelete: Cascade)
+  scenes         Scene[]
+  attendees      SessionAttendance[]
   npcAppearances NpcAppearance[]
 }
 
@@ -188,7 +196,7 @@ model Npc {
   status      NpcStatus @default(ALIVE)
   campaignId  String
 
-  campaign      Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign      Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   relationships NpcRelationship[] @relation("subject")
   relatedTo     NpcRelationship[] @relation("object")
   appearances   NpcAppearance[]
@@ -227,26 +235,103 @@ model SessionAttendance {
 }
 
 model Hunter {
-  id        String @id @default(cuid())
-  name      String
-  playbook  String
-  charmMod  Int    @default(0)
-  coolMod   Int    @default(0)
-  sharpMod  Int    @default(0)
-  toughMod  Int    @default(0)
-  weirdMod  Int    @default(0)
-  harm      Int    @default(0)
-  harmMax   Int    @default(7)
-  luck      Int    @default(7)
-  xp        Int    @default(0)
-  moves     Json   @default("[]")
-  gear      Json   @default("[]")
-  bonds     Json   @default("[]")
-  look      String?
-  userId    String
-  campaignId String
+  id            String  @id @default(cuid())
+  name          String
+  playbook      String
+  charmMod      Int     @default(0)
+  coolMod       Int     @default(0)
+  sharpMod      Int     @default(0)
+  toughMod      Int     @default(0)
+  weirdMod      Int     @default(0)
+  harm          Int     @default(0)
+  harmMax       Int     @default(7)
+  luck          Int     @default(7)
+  xp            Int     @default(0)
+  look          String?
+  pronouns      String?
+  ratingsLine   Int     @default(-1)
+  isUnstable    Boolean @default(false)
+  isDying       Boolean @default(false)
+  levelUpCount  Int     @default(0)
+  /// [HunterImprovements]
+  improvements  Json    @default("[]")
+  playbookNotes String?
+  luckSpecial   String?
+  userId        String
+  campaignId    String
 
-  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  campaign   Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  attendance SessionAttendance[]
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  attendance  SessionAttendance[]
+  moves            HunterMove[]
+  gear             HunterGear[]
+  bonds            HunterBond[]            @relation("hunterBonds")
+  bondTargets      HunterBond[]            @relation("bondTargets")
+  playbookFeatures HunterPlaybookFeature[]
+}
+
+// ── Hunter relational sub-models ────────────────────────────────
+
+enum MoveRollType {
+  CHARM
+  COOL
+  SHARP
+  TOUGH
+  WEIRD
+}
+
+model HunterMove {
+  id          String        @id @default(cuid())
+  hunterId    String
+  name        String
+  description String
+  rollType    MoveRollType?
+  isCustom    Boolean       @default(false)
+  order       Int           @default(0)
+
+  hunter Hunter @relation(fields: [hunterId], references: [id], onDelete: Cascade)
+}
+
+model HunterGear {
+  id       String  @id @default(cuid())
+  hunterId String
+  kind     String  // 'weapon' | 'gear'
+  name     String
+  harm     Int?
+  /// [WeaponRanges]
+  ranges   Json?
+  /// [GearTags]
+  tags     Json?
+  notes    String?
+  order    Int     @default(0)
+
+  hunter Hunter @relation(fields: [hunterId], references: [id], onDelete: Cascade)
+}
+
+model HunterPlaybookFeature {
+  id          String        @id @default(cuid())
+  hunterId    String
+  section     String
+  label       String
+  description String?
+  value       String?
+  rollType    MoveRollType?
+  /// [PlaybookFeatureEffects]
+  effects     Json?
+  order       Int           @default(0)
+
+  hunter Hunter @relation(fields: [hunterId], references: [id], onDelete: Cascade)
+
+  @@index([hunterId, section])
+}
+
+model HunterBond {
+  id             String  @id @default(cuid())
+  hunterId       String
+  text           String
+  targetHunterId String?
+  order          Int     @default(0)
+
+  hunter       Hunter  @relation("hunterBonds", fields: [hunterId], references: [id], onDelete: Cascade)
+  targetHunter Hunter? @relation("bondTargets", fields: [targetHunterId], references: [id], onDelete: SetNull)
 }
