@@ -29,6 +29,7 @@
 		"prettier": "3.8.1",
 		"prettier-plugin-svelte": "3.5.0",
 		"prisma": "7.4.0",
+		"prisma-json-types-generator": "4.1.1",
 		"svelte": "^5.49.2",
 		"svelte-check": "^4.3.6",
 		"typescript": "^5.9.3",
@@ -45,6 +46,8 @@
 		"@skeletonlabs/skeleton-svelte": "4.12.0",
 		"@tailwindcss/vite": "4.2.0",
 		"better-auth": "1.4.18",
-		"tailwindcss": "4.2.0"
+		"sveltekit-superforms": "2.29.1",
+		"tailwindcss": "4.2.0",
+		"zod": "4.3.6"
 	}
 }

@@ -1,100 +1,109 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { PageData, ActionData } from './$types';
+	import type { PageData } from './$types';
+	import { superForm } from 'sveltekit-superforms';
+	import StatusRating from '$lib/components/StatusRating.svelte';
+	import MoveListEditor from '$lib/components/MoveListEditor.svelte';
+	import GearListEditor from '$lib/components/GearListEditor.svelte';
+	import BondListEditor from '$lib/components/BondListEditor.svelte';
+	import type { HunterMove, HunterGearItem, HunterBond } from '$lib/hunter-types';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let { data }: { data: PageData } = $props();
 	let hunter = $derived(data.hunter);
 
-	let movesText = $state(JSON.stringify(data.hunter.moves, null, 2));
-	let gearText = $state(JSON.stringify(data.hunter.gear, null, 2));
-	let bondsText = $state(JSON.stringify(data.hunter.bonds, null, 2));
+	const { form, enhance, tainted, isTainted } = superForm(data.form, {
+		dataType: 'json',
+		resetForm: false
+	});
+
+	let otherHunters = $derived(
+		data.campaign.hunters
+			.filter((h) => h.id !== hunter.id)
+			.map((h) => ({ id: h.id, name: h.name }))
+	);
 </script>
-
-<h1 class="h1">{hunter.name}</h1>
-<p class="text-xs text-surface-400 mb-6">Playbook: {hunter.playbook} | Player: {hunter.user.name}</p>
-
-{#if form?.success}
-	<p class="text-success-500 mb-4">Saved!</p>
-{/if}
 
 {#if data.canEdit}
 	<form method="POST" action="?/update" use:enhance>
+		<div class="flex items-start justify-between gap-4 mb-6">
+			<div>
+				<h1 class="h1">{hunter.name}</h1>
+				<p class="text-xs text-surface-400">Playbook: {hunter.playbook} | Player: {hunter.user.name}</p>
+			</div>
+			{#if isTainted($tainted)}
+				<button type="submit" class="btn preset-filled-primary-500 whitespace-nowrap">Save Hunter</button>
+			{/if}
+		</div>
+
 		<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
 			<div class="card p-4">
 				<h3 class="h3">Identity</h3>
 				<label class="label mb-4">
 					<span class="label-text">Name</span>
-					<input class="input" name="name" value={hunter.name} required />
+					<input class="input" name="name" bind:value={$form.name} required />
 				</label>
 				<label class="label mb-4">
 					<span class="label-text">Playbook</span>
-					<input class="input" name="playbook" value={hunter.playbook} required />
+					<input class="input" name="playbook" bind:value={$form.playbook} required />
 				</label>
 				<label class="label mb-4">
 					<span class="label-text">Look</span>
-					<textarea class="textarea" name="look" rows="2">{hunter.look ?? ''}</textarea>
+					<textarea class="textarea" name="look" rows="2" bind:value={$form.look}></textarea>
 				</label>
 			</div>
 
 			<div class="card p-4">
 				<h3 class="h3">Stats</h3>
 				<div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2">
-					{#each [{ name: 'charmMod', label: 'Charm' }, { name: 'coolMod', label: 'Cool' }, { name: 'sharpMod', label: 'Sharp' }, { name: 'toughMod', label: 'Tough' }, { name: 'weirdMod', label: 'Weird' }] as stat}
-						<label class="label text-center">
-							<span class="label-text text-xs">{stat.label}</span>
-							<input class="input text-center text-xl font-bold" name={stat.name} type="number" min="-3" max="3" value={hunter[stat.name as keyof typeof hunter]} />
-						</label>
-					{/each}
+					<label class="label text-center">
+						<span class="label-text text-xs">Charm</span>
+						<input class="input text-center text-xl font-bold" type="number" min="-3" max="3" bind:value={$form.charmMod} />
+					</label>
+					<label class="label text-center">
+						<span class="label-text text-xs">Cool</span>
+						<input class="input text-center text-xl font-bold" type="number" min="-3" max="3" bind:value={$form.coolMod} />
+					</label>
+					<label class="label text-center">
+						<span class="label-text text-xs">Sharp</span>
+						<input class="input text-center text-xl font-bold" type="number" min="-3" max="3" bind:value={$form.sharpMod} />
+					</label>
+					<label class="label text-center">
+						<span class="label-text text-xs">Tough</span>
+						<input class="input text-center text-xl font-bold" type="number" min="-3" max="3" bind:value={$form.toughMod} />
+					</label>
+					<label class="label text-center">
+						<span class="label-text text-xs">Weird</span>
+						<input class="input text-center text-xl font-bold" type="number" min="-3" max="3" bind:value={$form.weirdMod} />
+					</label>
 				</div>
 			</div>
 
-			<div class="card p-4">
+			<div class="card p-4 space-y-3">
 				<h3 class="h3">Status</h3>
-				<div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2">
-					<label class="label text-center">
-						<span class="label-text text-xs">Harm ({hunter.harm}/{hunter.harmMax})</span>
-						<input class="input text-center text-xl font-bold" name="harm" type="number" min="0" max={hunter.harmMax} value={hunter.harm} />
-					</label>
-					<label class="label text-center">
-						<span class="label-text text-xs">Luck</span>
-						<input class="input text-center text-xl font-bold" name="luck" type="number" min="0" max="7" value={hunter.luck} />
-					</label>
-					<label class="label text-center">
-						<span class="label-text text-xs">XP</span>
-						<input class="input text-center text-xl font-bold" name="xp" type="number" min="0" value={hunter.xp} />
-					</label>
-				</div>
+				<StatusRating value={$form.harm as number} max={hunter.harmMax} onchange={(v: number) => $form.harm = v} label="Harm" variant="harm" name="harm" />
+				<StatusRating value={$form.luck as number} max={7} onchange={(v: number) => $form.luck = v} label="Luck" variant="luck" name="luck" />
+				<StatusRating value={$form.xp as number} max={5} onchange={(v: number) => $form.xp = v} label="XP" variant="xp" name="xp" />
 			</div>
 
 			<div class="card p-4">
 				<h3 class="h3">Moves</h3>
-				<label class="label">
-					<span class="label-text">Moves (JSON array)</span>
-					<textarea class="textarea" name="moves" rows="6" bind:value={movesText}></textarea>
-				</label>
+				<MoveListEditor bind:items={$form.moves as HunterMove[]} />
 			</div>
 
 			<div class="card p-4">
 				<h3 class="h3">Gear</h3>
-				<label class="label">
-					<span class="label-text">Gear (JSON array)</span>
-					<textarea class="textarea" name="gear" rows="4" bind:value={gearText}></textarea>
-				</label>
+				<GearListEditor bind:items={$form.gear as HunterGearItem[]} />
 			</div>
 
 			<div class="card p-4">
 				<h3 class="h3">Bonds</h3>
-				<label class="label">
-					<span class="label-text">Bonds (JSON array)</span>
-					<textarea class="textarea" name="bonds" rows="4" bind:value={bondsText}></textarea>
-				</label>
+				<BondListEditor bind:items={$form.bonds as HunterBond[]} hunters={otherHunters} />
 			</div>
 		</div>
-
-		<button type="submit" class="btn preset-filled-primary-500 mt-4">Save Hunter</button>
 	</form>
 {:else}
-	<!-- Read-only view for other players' hunters -->
+	<h1 class="h1">{hunter.name}</h1>
+	<p class="text-xs text-surface-400 mb-6">Playbook: {hunter.playbook} | Player: {hunter.user.name}</p>
+
 	<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
 		<div class="card p-4">
 			<h3 class="h3">Identity</h3>
@@ -108,7 +117,7 @@
 		<div class="card p-4">
 			<h3 class="h3">Stats</h3>
 			<div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2 text-center">
-				{#each [{ key: 'charmMod', label: 'Charm' }, { key: 'coolMod', label: 'Cool' }, { key: 'sharpMod', label: 'Sharp' }, { key: 'toughMod', label: 'Tough' }, { key: 'weirdMod', label: 'Weird' }] as stat}
+				{#each [{ key: 'charmMod', label: 'Charm' }, { key: 'coolMod', label: 'Cool' }, { key: 'sharpMod', label: 'Sharp' }, { key: 'toughMod', label: 'Tough' }, { key: 'weirdMod', label: 'Weird' }] as stat (stat.key)}
 					<div>
 						<span class="text-xs text-surface-400">{stat.label}</span>
 						<p class="text-xl font-bold">{hunter[stat.key as keyof typeof hunter]}</p>
