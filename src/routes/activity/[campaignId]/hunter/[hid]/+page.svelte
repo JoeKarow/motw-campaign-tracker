@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import HarmTrack from '$lib/components/HarmTrack.svelte';
-	import LuckTrack from '$lib/components/LuckTrack.svelte';
-	import XpTrack from '$lib/components/XpTrack.svelte';
+	import StatusRating from '$lib/components/StatusRating.svelte';
 
 	let { data }: { data: PageData } = $props();
 	const campaignId = data.campaignId;
@@ -23,9 +21,9 @@
 	<p class="text-center text-surface-400 mb-6">{hunter.playbook}</p>
 
 	<div class="flex flex-col gap-4 mb-6">
-		<HarmTrack value={hunter.harm} max={hunter.harmMax} onchange={(v) => update('harm', v)} />
-		<LuckTrack value={hunter.luck} max={7} onchange={(v) => update('luck', v)} />
-		<XpTrack value={hunter.xp} max={5} onchange={(v) => update('xp', v)} />
+		<StatusRating value={hunter.harm} max={hunter.harmMax} onchange={(v) => update('harm', v)} label="Harm" variant="harm" />
+		<StatusRating value={hunter.luck} max={7} onchange={(v) => update('luck', v)} label="Luck" variant="luck" />
+		<StatusRating value={hunter.xp} max={5} onchange={(v) => update('xp', v)} label="XP" variant="xp" />
 	</div>
 
 	<div class="card p-4">

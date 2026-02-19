@@ -4,8 +4,7 @@
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import SceneTracker from '$lib/components/SceneTracker.svelte';
 	import NpcCard from '$lib/components/NpcCard.svelte';
-	import HarmTrack from '$lib/components/HarmTrack.svelte';
-	import LuckTrack from '$lib/components/LuckTrack.svelte';
+	import StatusRating from '$lib/components/StatusRating.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -92,15 +91,19 @@
 						<div class="card p-4 flex flex-col gap-2">
 							<h3 class="h3">{hunter.name}</h3>
 							<p class="text-xs text-surface-400">{hunter.playbook}</p>
-							<HarmTrack
+							<StatusRating
 								value={hunter.harm}
 								max={hunter.harmMax}
 								onchange={(v) => updateHunter(hunter.id, 'harm', v)}
+								label="Harm"
+								variant="harm"
 							/>
-							<LuckTrack
+							<StatusRating
 								value={hunter.luck}
 								max={7}
 								onchange={(v) => updateHunter(hunter.id, 'luck', v)}
+								label="Luck"
+								variant="luck"
 							/>
 						</div>
 					{/each}
