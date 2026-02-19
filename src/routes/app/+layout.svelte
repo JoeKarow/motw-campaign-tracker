@@ -4,8 +4,11 @@
 	import { authClient } from '$lib/auth-client';
 	import { invalidateAll } from '$app/navigation';
 	import { Navigation } from '@skeletonlabs/skeleton-svelte';
+	import DevTools from '$lib/dev/DevTools.svelte';
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
+
+	let showImpersonationBanner = $derived(data.isImpersonating);
 
 	let anchorSidebar = 'btn hover:preset-tonal justify-start px-2 w-full';
 
@@ -16,14 +19,18 @@
 	}
 </script>
 
-{#if data.isImpersonating}
+{#if showImpersonationBanner}
 	<div class="fixed top-0 left-0 right-0 z-50 bg-warning-500 text-black text-center py-2 px-4 flex items-center justify-center gap-4">
 		<span class="font-semibold">Impersonating as {data.user.name}</span>
 		<button class="btn btn-sm preset-filled-surface-900-50" onclick={stopImpersonating}>Stop Impersonating</button>
 	</div>
 {/if}
 
-<div class="flex min-h-screen" class:pt-10={data.isImpersonating}>
+{#if data.user?.role === 'admin'}
+	<DevTools isImpersonating={data.isImpersonating} />
+{/if}
+
+<div class="flex min-h-screen" class:pt-10={showImpersonationBanner}>
 	<Navigation layout="sidebar" class="grid grid-rows-[auto_1fr_auto] gap-4">
 		<Navigation.Header>
 			<a href="/app" class="btn preset-filled-primary-500 w-full justify-start px-2">
