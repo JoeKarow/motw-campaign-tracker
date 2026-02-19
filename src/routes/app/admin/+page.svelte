@@ -58,7 +58,11 @@
 						</td>
 						<td class="text-sm text-surface-400">{user.email}</td>
 						<td>
-							<span class="badge text-xs {user.role === 'admin' ? 'preset-filled-warning-500' : 'preset-filled-surface-500'}">
+							<span
+								class="badge text-xs {user.role === 'admin'
+									? 'preset-filled-warning-500'
+									: 'preset-filled-surface-500'}"
+							>
 								{user.role || 'user'}
 							</span>
 						</td>
@@ -75,20 +79,24 @@
 						<td>
 							<div class="flex gap-1 flex-wrap">
 								<!-- Set Role -->
-								<form method="POST" action="?/setRole" use:enhance class="inline flex gap-1">
+								<form method="POST" action="?/setRole" use:enhance class="flex gap-1">
 									<input type="hidden" name="userId" value={user.id} />
 									<select name="role" class="select select-sm w-24 text-xs">
 										<option value="user" selected={user.role !== 'admin'}>user</option>
 										<option value="admin" selected={user.role === 'admin'}>admin</option>
 									</select>
-									<button type="submit" class="btn btn-sm preset-outlined-surface-300-700">Set</button>
+									<button type="submit" class="btn btn-sm preset-outlined-surface-300-700"
+										>Set</button
+									>
 								</form>
 
 								<!-- Ban / Unban -->
 								{#if user.banned}
 									<form method="POST" action="?/unban" use:enhance class="inline">
 										<input type="hidden" name="userId" value={user.id} />
-										<button type="submit" class="btn btn-sm preset-outlined-success-500">Unban</button>
+										<button type="submit" class="btn btn-sm preset-outlined-success-500"
+											>Unban</button
+										>
 									</form>
 								{:else}
 									<form method="POST" action="?/ban" use:enhance class="inline">
@@ -117,7 +125,9 @@
 		{#each Array.from({ length: totalPages }, (_, i) => i + 1) as p (p)}
 			<a
 				href="/app/admin?page={p}{search ? `&q=${search}` : ''}"
-				class="btn btn-sm {p === data.page ? 'preset-filled-primary-500' : 'preset-outlined-surface-300-700'}"
+				class="btn btn-sm {p === data.page
+					? 'preset-filled-primary-500'
+					: 'preset-outlined-surface-300-700'}"
 			>
 				{p}
 			</a>

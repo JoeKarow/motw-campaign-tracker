@@ -63,7 +63,7 @@
 {#if loading}
 	<div class="text-center text-surface-400 p-12">Loading session...</div>
 {:else}
-	<div class="p-4 max-w-[600px] mx-auto">
+	<div class="p-4 max-w-150 mx-auto">
 		<Tabs value={activeTab} onValueChange={(details) => (activeTab = details.value)}>
 			<Tabs.List>
 				<Tabs.Trigger class="flex-1" value="scene">Scene</Tabs.Trigger>
@@ -81,7 +81,9 @@
 						onaddclue={addClue}
 					/>
 				{:else}
-					<p class="text-surface-400 text-center p-12">No active session. Start one from the web app.</p>
+					<p class="text-surface-400 text-center p-12">
+						No active session. Start one from the web app.
+					</p>
 				{/if}
 			</Tabs.Content>
 			<Tabs.Content value="hunters">
