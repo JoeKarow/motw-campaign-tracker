@@ -1,14 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import StatusRating from '$lib/components/StatusRating.svelte';
+	import { getActivityFetch, getSessionToken } from '$lib/discord-context.svelte';
+	import { createCampaignEventSource } from '$lib/activity-events.svelte';
 
 	let { data }: { data: PageData } = $props();
+	const afetch = getActivityFetch();
+	const sessionToken = getSessionToken();
 	const campaignId = data.campaignId;
 	let hunter = $state({ ...data.hunter });
 
 	async function update(field: string, value: number) {
 		hunter = { ...hunter, [field]: value };
-		await fetch(`/api/campaign/${campaignId}/hunter/${hunter.id}`, {
+		await afetch(`/api/campaign/${campaignId}/hunter/${hunter.id}`, {
 			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ [field]: value })

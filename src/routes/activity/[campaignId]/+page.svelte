@@ -5,8 +5,11 @@
 	import SceneTracker from '$lib/components/SceneTracker.svelte';
 	import NpcCard from '$lib/components/NpcCard.svelte';
 	import StatusRating from '$lib/components/StatusRating.svelte';
+	import { getActivityFetch, getSessionToken } from '$lib/discord-context.svelte';
 
 	let { data }: { data: PageData } = $props();
+	const afetch = getActivityFetch();
+	const sessionToken = getSessionToken();
 
 	let activeTab = $state('scene');
 	let session = $state<any>(null);
@@ -23,13 +26,13 @@
 	});
 
 	async function loadSession() {
-		const res = await fetch(`/api/campaign/${campaignId}/active-session`);
+		const res = await afetch(`/api/campaign/${campaignId}/active-session`);
 		const result = await res.json();
 		session = result.session;
 	}
 
 	async function addClue(sceneId: string, description: string) {
-		await fetch(`/api/campaign/${campaignId}/scene/${sceneId}/clue`, {
+		await afetch(`/api/campaign/${campaignId}/scene/${sceneId}/clue`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ description })
@@ -38,18 +41,18 @@
 	}
 
 	async function updateNpcStatus(npcId: string, status: string) {
-		await fetch(`/api/campaign/${campaignId}/npc/${npcId}/status`, {
+		await afetch(`/api/campaign/${campaignId}/npc/${npcId}/status`, {
 			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ status })
 		});
-		const res = await fetch(`/api/campaign/${campaignId}/npc`);
+		const res = await afetch(`/api/campaign/${campaignId}/npc`);
 		const result = await res.json();
 		npcs = result.npcs;
 	}
 
 	async function updateHunter(hunterId: string, field: string, value: number) {
-		await fetch(`/api/campaign/${campaignId}/hunter/${hunterId}`, {
+		await afetch(`/api/campaign/${campaignId}/hunter/${hunterId}`, {
 			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ [field]: value })

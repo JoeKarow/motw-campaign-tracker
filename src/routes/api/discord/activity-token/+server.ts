@@ -91,5 +91,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 	});
 
-	return json({ access_token: sessionToken });
+	return json(
+		{ access_token: discordAccessToken, session_token: sessionToken },
+		{
+			headers: {
+				'Set-Cookie': `better-auth.session_token=${sessionToken}; Path=/; HttpOnly; SameSite=None; Secure; Max-Age=${30 * 24 * 60 * 60}`
+			}
+		}
+	);
 };

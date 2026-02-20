@@ -5,7 +5,7 @@ import { prisma } from '$lib/server/prisma';
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$env/static/private';
 
 export const auth = betterAuth({
-	trustedOrigins: ['http://localhost:5173', 'https://motw.jk3.me'],
+	trustedOrigins: ['http://localhost:5173', 'https://motw.jk3.me', 'https://*.discordsays.com'],
 	database: prismaAdapter(prisma, {
 		provider: 'postgresql'
 	}),

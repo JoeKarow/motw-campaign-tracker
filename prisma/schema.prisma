@@ -83,9 +83,10 @@ model Verification {
 // ── Domain models ──────────────────────────────────────────────────
 
 model Campaign {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  name            String
+  discordGuildId  String?
+  createdAt       DateTime @default(now())
 
   mysteries Mystery[]
   npcs      Npc[]

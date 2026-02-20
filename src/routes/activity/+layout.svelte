@@ -2,16 +2,17 @@
 	import { onMount } from 'svelte';
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import { initDiscord } from '$lib/discord';
-	import { setDiscordContext } from '$lib/discord-context';
-	import type { DiscordResult } from '$lib/discord';
+	import { setDiscordContext } from '$lib/discord-context.svelte';
 
 	let { children } = $props();
 	let loading = $state(true);
-	let discordResult = $state<DiscordResult>({ sdk: null, mode: 'web' });
+
+	// Set context synchronously during init with default value
+	const discordState = setDiscordContext({ sdk: null, mode: 'web' });
 
 	onMount(async () => {
-		discordResult = await initDiscord(PUBLIC_DISCORD_CLIENT_ID);
-		setDiscordContext(discordResult);
+		const result = await initDiscord(PUBLIC_DISCORD_CLIENT_ID);
+		discordState.current = result;
 		loading = false;
 	});
 </script>

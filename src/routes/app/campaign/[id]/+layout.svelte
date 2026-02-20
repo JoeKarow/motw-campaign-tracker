@@ -26,6 +26,7 @@
 				<a href="/app/campaign/{data.campaign.id}/npc" class="btn btn-sm preset-outlined-surface-300-700">NPCs</a>
 				<a href="/app/campaign/{data.campaign.id}/hunter" class="btn btn-sm preset-outlined-surface-300-700">Hunters</a>
 				<a href="/app/campaign/{data.campaign.id}/invite" class="btn btn-sm preset-outlined-surface-300-700">Members</a>
+				<a href="/app/campaign/{data.campaign.id}/settings" class="btn btn-sm preset-outlined-surface-300-700">Settings</a>
 			{:else}
 				<a href="/app/campaign/{data.campaign.id}/mystery/new" class="btn btn-sm preset-outlined-surface-300-700">Mysteries</a>
 				{#if myHunter}
