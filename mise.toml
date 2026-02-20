@@ -1,4 +1,4 @@
 [tools]
-node = "22"
+node = "v22.22.0"
 bun = "latest"
 "npm:svelte-language-server" = "latest"
