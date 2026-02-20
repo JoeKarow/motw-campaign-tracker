@@ -34,6 +34,7 @@ export const actions: Actions = {
 
 		await prisma.npc.update({
 			where: { id: params.nid },
+			emit: true,
 			data: {
 				name: formData.get('name')?.toString()?.trim() || undefined,
 				description: formData.get('description')?.toString()?.trim() || null,

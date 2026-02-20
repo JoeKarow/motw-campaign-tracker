@@ -4,7 +4,6 @@ import { prisma } from '$lib/server/prisma';
 import { requireCampaignMember } from '$lib/server/campaign-auth';
 import { parseHunter } from '$lib/hunter-types';
 import { hunterWithRelations } from '$lib/server/hunter-includes';
-
 export const PATCH: RequestHandler = async ({ params, locals, request }) => {
 	if (!locals.user) throw error(401, 'Unauthorized');
 	const { role } = await requireCampaignMember(locals.user.id, params.id);
@@ -38,7 +37,8 @@ export const PATCH: RequestHandler = async ({ params, locals, request }) => {
 	const updated = await prisma.hunter.update({
 		where: { id: params.hid },
 		data,
-		include: hunterWithRelations
+		include: hunterWithRelations,
+		emit: true
 	});
 
 	return json({ hunter: parseHunter(updated) });

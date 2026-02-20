@@ -2,6 +2,7 @@ import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { prisma } from '$lib/server/prisma';
 import { requireGM } from '$lib/server/campaign-auth';
+import { emit } from '$lib/server/events';
 
 export const POST: RequestHandler = async ({ params, locals, request }) => {
 	if (!locals.user) throw error(401, 'Unauthorized');
@@ -20,5 +21,7 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
 
 	// This endpoint returns the next/prev scene info
 	// The client tracks the current scene index
+	emit(params.id, { type: 'scene:advanced', sessionId, direction });
+
 	return json({ scenes, direction });
 };

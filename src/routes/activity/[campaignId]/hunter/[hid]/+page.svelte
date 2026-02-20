@@ -1,14 +1,30 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 	import StatusRating from '$lib/components/StatusRating.svelte';
 	import { getActivityFetch, getSessionToken } from '$lib/discord-context.svelte';
 	import { createCampaignEventSource } from '$lib/activity-events.svelte';
+	import type { CampaignEvent } from '$lib/events';
 
 	let { data }: { data: PageData } = $props();
 	const afetch = getActivityFetch();
 	const sessionToken = getSessionToken();
 	const campaignId = data.campaignId;
 	let hunter = $state({ ...data.hunter });
+
+	function handleEvent(event: CampaignEvent) {
+		if (event.type === 'hunter:updated' && event.hunterId === hunter.id) {
+			hunter = { ...hunter, ...event.data };
+		}
+	}
+
+	const sse = sessionToken
+		? createCampaignEventSource(campaignId, sessionToken, handleEvent)
+		: null;
+
+	onDestroy(() => {
+		sse?.destroy();
+	});
 
 	async function update(field: string, value: number) {
 		hunter = { ...hunter, [field]: value };

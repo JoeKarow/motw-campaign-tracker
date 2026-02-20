@@ -13,7 +13,8 @@
 		"format": "prettier --write .",
 		"lint": "eslint .",
 		"test": "vitest",
-		"postinstall": "prisma generate"
+		"postinstall": "bun run db:generate",
+		"db:generate": "prisma-emitter generate --schema=./prisma/schema.prisma --output=./src/lib/generated/prisma/"
 	},
 	"devDependencies": {
 		"@eslint/js": "10.0.1",
@@ -28,7 +29,7 @@
 		"globals": "17.3.0",
 		"prettier": "3.8.1",
 		"prettier-plugin-svelte": "3.5.0",
-		"prisma": "7.4.0",
+		"prisma": "7.4.1",
 		"prisma-json-types-generator": "4.1.1",
 		"svelte": "^5.49.2",
 		"svelte-check": "^4.3.6",
@@ -41,13 +42,17 @@
 	"dependencies": {
 		"@discord/embedded-app-sdk": "2.4.0",
 		"@prisma/adapter-pg": "7.4.1",
-		"@prisma/client": "7.4.0",
+		"@prisma/client": "7.4.1",
 		"@skeletonlabs/skeleton": "4.12.0",
 		"@skeletonlabs/skeleton-svelte": "4.12.0",
 		"@tailwindcss/vite": "4.2.0",
 		"better-auth": "1.4.18",
+		"prisma-extension-emitter": "2.1.14",
 		"sveltekit-superforms": "2.29.1",
 		"tailwindcss": "4.2.0",
 		"zod": "4.3.6"
+	},
+	"overrides": {
+		"@prisma/internals": "7.4.1"
 	}
 }

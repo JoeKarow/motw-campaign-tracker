@@ -23,6 +23,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  /// !['user' | 'admin' ]
   role          String    @default("user")
   banned        Boolean   @default(false)
   banReason     String?
@@ -83,10 +84,10 @@ model Verification {
 // ── Domain models ──────────────────────────────────────────────────
 
 model Campaign {
-  id              String   @id @default(cuid())
-  name            String
-  discordGuildId  String?
-  createdAt       DateTime @default(now())
+  id             String   @id @default(cuid())
+  name           String
+  discordGuildId String?
+  createdAt      DateTime @default(now())
 
   mysteries Mystery[]
   npcs      Npc[]
@@ -261,9 +262,9 @@ model Hunter {
   userId        String
   campaignId    String
 
-  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  attendance  SessionAttendance[]
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  campaign         Campaign                @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  attendance       SessionAttendance[]
   moves            HunterMove[]
   gear             HunterGear[]
   bonds            HunterBond[]            @relation("hunterBonds")
@@ -296,7 +297,8 @@ model HunterMove {
 model HunterGear {
   id       String  @id @default(cuid())
   hunterId String
-  kind     String  // 'weapon' | 'gear'
+  /// !['weapon' | 'gear']
+  kind     String
   name     String
   harm     Int?
   /// [WeaponRanges]

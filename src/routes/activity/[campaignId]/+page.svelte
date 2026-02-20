@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 	import { Tabs } from '@skeletonlabs/skeleton-svelte';
 	import SceneTracker from '$lib/components/SceneTracker.svelte';
 	import NpcCard from '$lib/components/NpcCard.svelte';
 	import StatusRating from '$lib/components/StatusRating.svelte';
 	import { getActivityFetch, getSessionToken } from '$lib/discord-context.svelte';
+	import { createCampaignEventSource } from '$lib/activity-events.svelte';
+	import type { CampaignEvent } from '$lib/events';
 
 	let { data }: { data: PageData } = $props();
 	const afetch = getActivityFetch();
@@ -20,9 +22,36 @@
 
 	const campaignId = data.campaignId;
 
+	function handleEvent(event: CampaignEvent) {
+		switch (event.type) {
+			case 'hunter:updated': {
+				const idx = hunters.findIndex((h) => h.id === event.hunterId);
+				if (idx >= 0) hunters[idx] = { ...hunters[idx], ...event.data };
+				break;
+			}
+			case 'npc:statusChanged': {
+				const idx = npcs.findIndex((n) => n.id === event.npcId);
+				if (idx >= 0) npcs[idx] = { ...npcs[idx], status: event.status };
+				break;
+			}
+			case 'clue:added':
+			case 'scene:advanced':
+				loadSession();
+				break;
+		}
+	}
+
+	const sse = sessionToken
+		? createCampaignEventSource(campaignId, sessionToken, handleEvent)
+		: null;
+
 	onMount(async () => {
 		await loadSession();
 		loading = false;
+	});
+
+	onDestroy(() => {
+		sse?.destroy();
 	});
 
 	async function loadSession() {

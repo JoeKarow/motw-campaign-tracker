@@ -70,6 +70,7 @@ export const actions: Actions = {
 			// Update hunter scalar fields + recreate relational rows
 			prisma.hunter.update({
 				where: { id: params.hid },
+				emit: true,
 				data: {
 					name: data.name,
 					playbook: data.playbook,

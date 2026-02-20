@@ -98,6 +98,7 @@ export const actions: Actions = {
 		});
 
 		await prisma.scene.create({
+			emit: true,
 			data: {
 				title,
 				description: formData.get('description')?.toString()?.trim() || null,
@@ -117,6 +118,7 @@ export const actions: Actions = {
 		if (!sceneId || !description) return fail(400, { error: 'Scene ID and description required' });
 
 		await prisma.clue.create({
+			emit: true,
 			data: {
 				description,
 				significance: formData.get('significance')?.toString()?.trim() || null,
