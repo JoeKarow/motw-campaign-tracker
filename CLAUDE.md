@@ -33,6 +33,11 @@ Monster of the Week campaign tracker — SvelteKit app with two surfaces:
 
 ### Key Patterns
 
+- **Skeleton UI**: Import components from `@skeletonlabs/skeleton-svelte`. Use Skeleton utility classes (`.btn`, `.card`, `.input`, etc.) — don't build custom equivalents.
+- **Superforms**: Server uses `superValidate(request, zod4(schema))`, client uses `superForm(data.form)` with `dataType: 'json'` + `resetForm: false`. Schemas in `$lib/schemas/`.
+- **SSE events**: `$lib/server/events.ts` manages per-campaign subscriber channels. Prisma extension listeners emit events on model changes. Frontend reconnects with exponential backoff (`$lib/activity-events.svelte.ts`).
+- **Campaign auth helper**: `$lib/server/campaign-auth.ts` — `requireCampaignMember()` validates user role (GM/Player) for both web actions and API endpoints.
+- **Bearer token auth**: Activity iframe uses Bearer token in Authorization header (fallback for no third-party cookies). Validated in `hooks.server.ts`. Client helper: `getActivityFetch()` from `$lib/discord-context.svelte.ts`.
 - **Prisma singleton**: `$lib/server/prisma.ts` — import this, never instantiate PrismaClient directly
 - **Auth tables**: The Prisma `Session` model (better-auth) maps to table `session` via `@@map`. Domain sessions use `GameSession` model to avoid naming collision.
 - **Campaign-scoped loading**: `app/campaign/[id]/+layout.server.ts` loads campaign with mysteries/npcs/hunters, child routes access via `parent()`
@@ -50,10 +55,18 @@ Campaign → Mystery → GameSession → Scene → Clue. NPCs and Hunters belong
 - **DB**: PostgreSQL + Prisma ORM
 - **Auth**: better-auth with Prisma adapter + Discord social provider
 - **Discord**: @discord/embedded-app-sdk for Activity iframe
+- **Styling**: Tailwind 4 (@tailwindcss/vite) + Skeleton UI (cerberus theme)
+- **Forms**: sveltekit-superforms + Zod 4 for validation, dirty tracking via `$tainted`
+- **Real-time**: SSE via custom ReadableStream channels (`$lib/server/events.ts`) + prisma-extension-emitter
+- **JSON types**: prisma-json-types-generator for typed JSON columns (moves/gear/bonds)
+- **Testing**: Vitest + @testing-library/svelte (no tests written yet)
 - **Deploy**: Docker multi-stage (oven/bun), docker-compose with Postgres
 
 ## Notes
 
+- `bunx prisma-emitter generate` runs via postinstall — regenerate after schema changes (output: `src/lib/generated/prisma/`)
+- Zod schemas use discriminated unions for gear types (weapons vs items) in `$lib/schemas/hunter.ts`
+- `.env.example` lists required env vars: DATABASE_URL, BETTER_AUTH_SECRET/URL, DISCORD_CLIENT_ID/SECRET, PUBLIC_DISCORD_CLIENT_ID
 - CSRF trustedOrigins includes `.discordsays.com` for Activity iframe
 - Vite allowedHosts includes `.discordsays.com`
 - Svelte 5 runes: use `$props()`, `$state()`, `$derived()` — no legacy `export let` or stores
