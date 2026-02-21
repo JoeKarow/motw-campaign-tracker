@@ -31,7 +31,7 @@
 		"prettier-plugin-svelte": "3.5.0",
 		"prisma": "7.4.1",
 		"prisma-json-types-generator": "4.1.1",
-		"svelte": "5.53.0",
+		"svelte": "5.53.1",
 		"svelte-check": "4.4.3",
 		"typescript": "5.9.3",
 		"typescript-eslint": "8.56.0",
