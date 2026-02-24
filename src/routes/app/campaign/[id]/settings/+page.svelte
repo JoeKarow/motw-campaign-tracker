@@ -1,3 +1,4 @@
+<!-- svelte-ignore state_referenced_locally -->
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageData } from './$types';

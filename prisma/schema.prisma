@@ -240,6 +240,11 @@ model Hunter {
   id            String  @id @default(cuid())
   name          String
   playbook      String
+  charmBase     Int     @default(0)
+  coolBase      Int     @default(0)
+  sharpBase     Int     @default(0)
+  toughBase     Int     @default(0)
+  weirdBase     Int     @default(0)
   charmMod      Int     @default(0)
   coolMod       Int     @default(0)
   sharpMod      Int     @default(0)
@@ -251,7 +256,6 @@ model Hunter {
   xp            Int     @default(0)
   look          String?
   pronouns      String?
-  ratingsLine   Int     @default(-1)
   isUnstable    Boolean @default(false)
   isDying       Boolean @default(false)
   levelUpCount  Int     @default(0)
