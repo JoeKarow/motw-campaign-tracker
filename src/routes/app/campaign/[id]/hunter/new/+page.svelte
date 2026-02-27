@@ -4,14 +4,20 @@
 
 	const PLAYBOOKS = [
 		'The Chosen',
+		'The Constructed',
 		'The Crooked',
 		'The Divine',
+		'The Exile',
 		'The Expert',
 		'The Flake',
+		'The Hard Case',
 		'The Initiate',
+		'The Meddling Kid',
 		'The Monstrous',
 		'The Mundane',
 		'The Professional',
+		'The Sidekick',
+		'The Snoop',
 		'The Spell-Slinger',
 		'The Spooky',
 		'The Wronged'
