@@ -29,7 +29,9 @@
 				<a href="/app/campaign/{data.campaign.id}/settings" class="btn btn-sm preset-outlined-surface-300-700">Settings</a>
 			{:else}
 				<a href="/app/campaign/{data.campaign.id}/mystery/new" class="btn btn-sm preset-outlined-surface-300-700">Mysteries</a>
-				{#if myHunter}
+				{#if myHunter && myHunter.isDraft}
+					<a href="/app/campaign/{data.campaign.id}/hunter/new" class="btn btn-sm preset-outlined-primary-500">Continue Creating</a>
+				{:else if myHunter}
 					<a href="/app/campaign/{data.campaign.id}/hunter/{myHunter.id}" class="btn btn-sm preset-outlined-surface-300-700">My Hunter</a>
 				{:else}
 					<a href="/app/campaign/{data.campaign.id}/hunter/new" class="btn btn-sm preset-filled-primary-500">Create Hunter</a>

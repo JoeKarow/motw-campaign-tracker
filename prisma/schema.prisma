@@ -240,6 +240,7 @@ model Hunter {
   id            String  @id @default(cuid())
   name          String
   playbook      String
+  isDraft       Boolean @default(false)
   charmBase     Int     @default(0)
   coolBase      Int     @default(0)
   sharpBase     Int     @default(0)

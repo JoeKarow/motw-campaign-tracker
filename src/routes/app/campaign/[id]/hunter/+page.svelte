@@ -25,7 +25,12 @@
 	<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
 		{#each data.hunters as hunter (hunter.id)}
 			<a href="/app/campaign/{data.campaignId}/hunter/{hunter.id}" class="card p-4 hover:ring-1 hover:ring-primary-500 transition-all no-underline">
-				<h3 class="h3">{hunter.name}</h3>
+				<div class="flex items-center gap-2">
+					<h3 class="h3">{hunter.name}</h3>
+					{#if hunter.isDraft}
+						<span class="badge preset-outlined-warning-500 text-xs">Draft</span>
+					{/if}
+				</div>
 				<p class="text-xs text-surface-400">{hunter.playbook}</p>
 				{#if hunter.user?.name}
 					<p class="text-xs text-surface-400 mt-1">Player: {hunter.user.name}</p>
