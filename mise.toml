@@ -2,3 +2,38 @@
 node = "v22.22.0"
 bun = "latest"
 "npm:svelte-language-server" = "latest"
+
+[tasks]
+build = "bun run vite build"
+preview = "bun run vite preview"
+check = "bun run svelte-kit sync && bun run svelte-check --tsconfig ./tsconfig.json"
+"check:watch" = "bun run svelte-kit sync && bun run svelte-check --tsconfig ./tsconfig.json --watch"
+format = "bun run prettier --write ."
+lint = "bun run eslint ."
+test = "bun run vitest"
+"db:migrate" = "bun run prisma migrate dev"
+"db:studio" = "bun run prisma studio"
+
+[tasks."dev:local"]
+env = { BETTER_AUTH_URL = 'http://localhost:5173' }
+run = "bun run vite dev"
+depends = ["db:generate"]
+
+[tasks.dev]
+env = { BETTER_AUTH_URL = 'https://motw.jk3.me' }
+run = "bun run vite dev"
+depends = ['tunnel:up', "db:generate"]
+depends_post = ['tunnel:down']
+
+[tasks."tunnel:up"]
+run = "ytunnel start motw"
+hide = true
+[tasks."tunnel:down"]
+run = "ytunnel stop motw"
+hide = true
+
+
+[tasks."db:generate"]
+run = "bun run prisma-emitter generate --schema=./prisma/schema.prisma --output=./src/lib/generated/prisma/"
+sources = ["prisma/schema.prisma"]
+outputs = ["src/lib/generated/prisma/**/*"]

@@ -5,14 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```sh
-bun run dev          # Start dev server (port 5173)
-bun run build        # Production build (adapter-node → build/)
-bun run check        # Type-check with svelte-check
-bun run preview      # Preview production build
+mise run dev          # Start dev server (port 5173)
+mise run build        # Production build (adapter-node → build/)
+mise run check        # Type-check with svelte-check
+mise run preview      # Preview production build
 
-bunx prisma migrate dev --name <name>   # Create + apply migration
-bunx prisma generate                     # Regenerate Prisma client after schema changes
-bunx prisma studio                       # Visual DB browser
+mise run db:migrate   # Create + apply migration (interactive -—name prompt)
+mise run db:generate  # Regenerate Prisma client after schema changes
+mise run db:studio    # Visual DB browser
 
 docker compose up db -d    # Start just Postgres
 docker compose up --build  # Build and run full stack (app + db)
@@ -64,7 +64,7 @@ Campaign → Mystery → GameSession → Scene → Clue. NPCs and Hunters belong
 
 ## Notes
 
-- `bunx prisma-emitter generate` runs via postinstall — regenerate after schema changes (output: `src/lib/generated/prisma/`)
+- `prisma-emitter generate` runs via postinstall — regenerate after schema changes (output: `src/lib/generated/prisma/`)
 - Zod schemas use discriminated unions for gear types (weapons vs items) in `$lib/schemas/hunter.ts`
 - `.env.example` lists required env vars: DATABASE_URL, BETTER_AUTH_SECRET/URL, DISCORD_CLIENT_ID/SECRET, PUBLIC_DISCORD_CLIENT_ID
 - CSRF trustedOrigins includes `.discordsays.com` for Activity iframe
