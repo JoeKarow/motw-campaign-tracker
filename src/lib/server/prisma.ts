@@ -21,7 +21,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 // --- Listeners: emit SSE events when Prisma operations fire with `emit: true` ---
 
 // Hunter update → SSE
-prismaEventListener<Hunter>("hunter", {
+prismaEventListener<Hunter>('hunter', {
 	listener: async ({ result }) => {
 		emit(result.campaignId, {
 			type: 'hunter:updated',
@@ -38,7 +38,7 @@ prismaEventListener<Hunter>("hunter", {
 });
 
 // NPC status change → SSE (only when status field is in the update)
-prismaEventListener<Npc>("npc", {
+prismaEventListener<Npc>('npc', {
 	data: { status: true },
 	listener: async ({ result }) => {
 		emit(result.campaignId, {
@@ -50,7 +50,7 @@ prismaEventListener<Npc>("npc", {
 });
 
 // Clue created → SSE (needs campaignId lookup via scene→session→mystery)
-prismaEventListener<Clue>("clue", {
+prismaEventListener<Clue>('clue', {
 	listener: async ({ result }) => {
 		const scene = await prisma.scene.findUnique({
 			where: { id: result.sceneId },
@@ -67,7 +67,7 @@ prismaEventListener<Clue>("clue", {
 });
 
 // Scene created → SSE (needs campaignId lookup via session→mystery)
-prismaEventListener<Scene>("scene", {
+prismaEventListener<Scene>('scene', {
 	listener: async ({ result }) => {
 		const session = await prisma.gameSession.findUnique({
 			where: { id: result.sessionId },
