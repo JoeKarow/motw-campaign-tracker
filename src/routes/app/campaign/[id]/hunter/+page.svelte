@@ -8,6 +8,7 @@
 
 <div class="flex justify-between items-center mb-6">
 	<h1 class="h1">Hunters</h1>
+	<a href="/app/campaign/{data.campaignId}/hunter/new" class="btn preset-filled-primary-500">New Hunter</a>
 </div>
 
 {#if data.hunters.length === 0}

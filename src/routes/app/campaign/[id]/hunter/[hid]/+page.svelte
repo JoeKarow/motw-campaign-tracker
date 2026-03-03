@@ -64,20 +64,33 @@
 </script>
 
 {#if data.canEdit}
-	<form method="POST" action="?/update" use:enhance>
-		<div class="flex items-start justify-between gap-4 mb-6">
+	<div class="flex items-start justify-between gap-4 mb-6">
+		<div class="flex items-center gap-3">
 			<div>
 				<h1 class="h1">{hunter.name}</h1>
 				<p class="text-xs text-surface-400">
 					Playbook: {hunter.playbook} | Player: {hunter.user.name}
 				</p>
 			</div>
+			<span class="badge {data.isDraft ? 'preset-filled-warning-500' : 'preset-filled-success-500'} text-xs">
+				{data.isDraft ? 'Draft' : 'Final'}
+			</span>
+		</div>
+		<div class="flex gap-2 items-start">
+			<form method="POST" action="?/toggleDraft" use:formEnhance>
+				<button type="submit" class="btn btn-sm {data.isDraft ? 'preset-outlined-success-500' : 'preset-outlined-warning-500'}">
+					{data.isDraft ? 'Mark as Final' : 'Revert to Draft'}
+				</button>
+			</form>
 			{#if isTainted($tainted)}
-				<button type="submit" class="btn preset-filled-primary-500 whitespace-nowrap"
+				<button type="submit" form="hunter-update-form" class="btn preset-filled-primary-500 whitespace-nowrap"
 					>Save Hunter</button
 				>
 			{/if}
 		</div>
+	</div>
+
+	<form id="hunter-update-form" method="POST" action="?/update" use:enhance>
 
 		<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
 			<div class="card p-4">
