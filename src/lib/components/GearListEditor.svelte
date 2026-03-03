@@ -46,10 +46,13 @@
 			<div class="flex-1 min-w-0">
 				<span class="font-bold">{item.name}</span>
 				{#if item.kind === 'weapon'}
-					<span class="badge preset-filled-surface-200-800 text-xs">Weapon</span>
-					<span class="text-xs text-error-500">{item.harm} harm</span>
+					<span title="Weapon">⚔️</span>
+					<span class="inline-flex rounded-full overflow-hidden">
+						<span class="bg-surface-700 px-1.5 py-px text-[0.65rem] leading-tight font-semibold uppercase text-white">harm</span>
+						<span class="bg-error-500 px-1.5 py-px text-[0.65rem] leading-tight font-bold font-mono tabular-nums text-white">{item.harm}</span>
+					</span>
 				{:else}
-					<span class="badge preset-filled-surface-200-800 text-xs">Gear</span>
+					<span title="Gear">🔧</span>
 				{/if}
 			</div>
 			<button type="button" class="btn btn-sm preset-tonal" onclick={() => editItem(item)}>
