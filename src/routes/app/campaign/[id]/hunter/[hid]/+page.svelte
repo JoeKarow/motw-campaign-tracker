@@ -69,7 +69,7 @@
 			<div>
 				<h1 class="h1">{hunter.name}</h1>
 				<p class="text-xs text-surface-400">
-					Playbook: {hunter.playbook} | Player: {hunter.user.name}
+					Playbook: {playbook?.displayName ?? hunter.playbook} | Player: {hunter.user.name}
 				</p>
 			</div>
 			<span class="badge {data.isDraft ? 'preset-filled-warning-500' : 'preset-filled-success-500'} text-xs">
@@ -98,10 +98,6 @@
 				<label class="label mb-4">
 					<span class="label-text">Name</span>
 					<input class="input" name="name" bind:value={$form.name} required />
-				</label>
-				<label class="label mb-4">
-					<span class="label-text">Playbook</span>
-					<input class="input" name="playbook" bind:value={$form.playbook} required />
 				</label>
 				<label class="label mb-4">
 					<span class="label-text">Look</span>
@@ -216,14 +212,13 @@
 {:else}
 	<h1 class="h1">{hunter.name}</h1>
 	<p class="text-xs text-surface-400 mb-6">
-		Playbook: {hunter.playbook} | Player: {hunter.user.name}
+		Playbook: {playbook?.displayName ?? hunter.playbook} | Player: {hunter.user.name}
 	</p>
 
 	<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
 		<div class="card p-4">
 			<h3 class="h3">Identity</h3>
 			<p><strong>Name:</strong> {hunter.name}</p>
-			<p><strong>Playbook:</strong> {hunter.playbook}</p>
 			{#if hunter.look}
 				<p><strong>Look:</strong> {hunter.look}</p>
 			{/if}

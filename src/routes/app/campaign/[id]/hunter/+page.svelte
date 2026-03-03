@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { getPlaybook } from '$lib/playbooks';
 
 	let { data }: { data: PageData } = $props();
 	let isGM = $derived(data.userRole === 'GM');
@@ -32,7 +33,7 @@
 						<span class="badge preset-outlined-warning-500 text-xs">Draft</span>
 					{/if}
 				</div>
-				<p class="text-xs text-surface-400">{hunter.playbook}</p>
+				<p class="text-xs text-surface-400">{getPlaybook(hunter.playbook)?.displayName ?? hunter.playbook}</p>
 				{#if hunter.user?.name}
 					<p class="text-xs text-surface-400 mt-1">Player: {hunter.user.name}</p>
 				{/if}

@@ -45,7 +45,6 @@ const bondSchema = z.object({
 
 export const hunterFormSchema = z.object({
 	name: z.string().min(1),
-	playbook: z.string().min(1),
 	look: z.string().nullable().optional(),
 	charmBase: z.number().int().min(-3).max(4).default(0),
 	coolBase: z.number().int().min(-3).max(4).default(0),

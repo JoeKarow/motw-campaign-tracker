@@ -24,7 +24,6 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const form = await superValidate(
 		{
 			name: hunter.name,
-			playbook: hunter.playbook,
 			look: hunter.look,
 			charmBase: hunter.charmBase,
 			coolBase: hunter.coolBase,
@@ -78,7 +77,6 @@ export const actions: Actions = {
 				emit: true,
 				data: {
 					name: data.name,
-					playbook: data.playbook,
 					look: data.look ?? null,
 					charmBase: data.charmBase,
 					coolBase: data.coolBase,
