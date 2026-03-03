@@ -24,10 +24,8 @@ export const load: LayoutServerLoad = async ({ params, locals }) => {
 			monsterWeakness: null,
 			howItWasKilled: null
 		}));
-		campaign.npcs = campaign.npcs.map((n) => ({
-			...n,
-			notes: null
-		}));
+		// NPC notes are now stored as NpcDetail rows with kind=NOTE,
+		// filtered at query time rather than stripped here
 	}
 
 	return { campaign, userRole: role, userId: locals.user!.id };

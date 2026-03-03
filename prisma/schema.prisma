@@ -191,17 +191,31 @@ enum NpcStatus {
 }
 
 model Npc {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  notes       String?
-  status      NpcStatus @default(ALIVE)
-  campaignId  String
+  id         String    @id @default(cuid())
+  name       String
+  status     NpcStatus @default(ALIVE)
+  campaignId String
 
   campaign      Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  details       NpcDetail[]
   relationships NpcRelationship[] @relation("subject")
   relatedTo     NpcRelationship[] @relation("object")
   appearances   NpcAppearance[]
+}
+
+enum NpcDetailKind {
+  DESCRIPTION
+  NOTE
+}
+
+model NpcDetail {
+  id    String        @id @default(cuid())
+  npcId String
+  kind  NpcDetailKind
+  text  String
+  order Int           @default(0)
+
+  npc Npc @relation(fields: [npcId], references: [id], onDelete: Cascade)
 }
 
 model NpcRelationship {

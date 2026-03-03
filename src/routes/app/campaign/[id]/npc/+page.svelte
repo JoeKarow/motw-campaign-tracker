@@ -14,7 +14,6 @@
 {#if isGM}
 	<form method="POST" action="?/create" use:enhance class="flex gap-2 items-center mb-6">
 		<input class="input flex-1" name="name" placeholder="NPC name..." required />
-		<input class="input flex-1" name="description" placeholder="Description (optional)" />
 		<button type="submit" class="btn preset-filled-primary-500">Add NPC</button>
 	</form>
 
@@ -33,8 +32,8 @@
 					<h3 class="h3">{npc.name}</h3>
 					<span class="badge {badgePreset(npc.status)}">{npc.status}</span>
 				</div>
-				{#if npc.description}
-					<p class="text-xs text-surface-400 mt-1">{npc.description}</p>
+				{#if npc.details?.length > 0}
+					<p class="text-xs text-surface-400 mt-1">{npc.details[0].text}</p>
 				{/if}
 				<div class="flex gap-4 mt-2 text-xs text-surface-400">
 					<span>{npc._count.appearances} appearances</span>

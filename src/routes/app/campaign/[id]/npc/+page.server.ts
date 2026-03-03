@@ -8,6 +8,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		where: { campaignId: params.id },
 		orderBy: { name: 'asc' },
 		include: {
+			details: { where: { kind: 'DESCRIPTION' }, orderBy: { order: 'asc' }, take: 1 },
 			_count: { select: { appearances: true, relationships: true } }
 		}
 	});
@@ -25,7 +26,6 @@ export const actions: Actions = {
 		await prisma.npc.create({
 			data: {
 				name,
-				description: formData.get('description')?.toString()?.trim() || null,
 				campaignId: params.id
 			}
 		});
