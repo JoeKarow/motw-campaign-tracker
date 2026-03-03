@@ -65,6 +65,33 @@ export const actions: Actions = {
 		return { success: true, addedName: user.name };
 	},
 
+	addById: async ({ request, params, locals }) => {
+		await requireGM(locals.user?.id, params.id);
+
+		const formData = await request.formData();
+		const userId = formData.get('userId')?.toString()?.trim();
+		if (!userId) return fail(400, { error: 'Please select a user' });
+
+		const user = await prisma.user.findUnique({ where: { id: userId } });
+		if (!user) return fail(404, { error: 'User not found' });
+
+		const existing = await prisma.campaignMember.findUnique({
+			where: { userId_campaignId: { userId: user.id, campaignId: params.id } }
+		});
+
+		if (existing) return fail(400, { error: 'User is already a member' });
+
+		await prisma.campaignMember.create({
+			data: {
+				userId: user.id,
+				campaignId: params.id,
+				role: 'PLAYER'
+			}
+		});
+
+		return { success: true, addedName: user.name };
+	},
+
 	removeMember: async ({ request, params, locals }) => {
 		await requireGM(locals.user?.id, params.id);
 

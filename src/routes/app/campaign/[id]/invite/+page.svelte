@@ -1,9 +1,48 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
+	import { Combobox, Portal, Avatar, type ComboboxRootProps, useListCollection } from '@skeletonlabs/skeleton-svelte';
 	import type { PageData, ActionData } from './$types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
+
+	let searchResults: { id: string; name: string; image: string | null }[] = $state([]);
+	let selectedUserId: string = $state('');
+	let debounceTimer: ReturnType<typeof setTimeout> | undefined = $state(undefined);
+
+	const collection = $derived(
+		useListCollection({
+			items: searchResults,
+			itemToString: (item) => item.name,
+			itemToValue: (item) => item.id
+		})
+	);
+
+	const onInputValueChange: ComboboxRootProps['onInputValueChange'] = (event) => {
+		clearTimeout(debounceTimer);
+		const query = event.inputValue;
+		if (query.length < 2) {
+			searchResults = [];
+			return;
+		}
+		debounceTimer = setTimeout(async () => {
+			try {
+				const res = await fetch(
+					`/api/campaign/${data.campaignId}/members/search?q=${encodeURIComponent(query)}`
+				);
+				if (res.ok) {
+					const data = await res.json();
+					searchResults = data.users;
+				}
+			} catch {
+				searchResults = [];
+			}
+		}, 300);
+	};
+
+	const onValueChange: ComboboxRootProps['onValueChange'] = (event) => {
+		selectedUserId = event.value[0] ?? '';
+	};
 </script>
 
 <h1 class="h1 mb-6">Campaign Members</h1>
@@ -32,12 +71,48 @@
 	</div>
 </div>
 
-<!-- Add by Discord Name -->
+<!-- Add Player by Search -->
 <div class="card p-4 mb-6">
-	<h2 class="h3 mb-3">Add Player by Name</h2>
-	<form method="POST" action="?/addByName" use:enhance class="flex gap-2 items-center">
-		<input class="input flex-1" name="name" placeholder="Discord username..." required />
-		<button type="submit" class="btn preset-filled-primary-500">Add</button>
+	<h2 class="h3 mb-3">Add Player</h2>
+	<form
+		method="POST"
+		action="?/addById"
+		use:enhance={() => {
+			return async ({ update }) => {
+				await update();
+				selectedUserId = '';
+				searchResults = [];
+			};
+		}}
+		class="flex gap-2 items-center"
+	>
+		<input type="hidden" name="userId" value={selectedUserId} />
+		<Combobox class="flex-1" placeholder="Search by username..." {collection} {onInputValueChange} {onValueChange} openOnClick={false}>
+			<Combobox.Control>
+				<Combobox.Input />
+			</Combobox.Control>
+			<Portal>
+				<Combobox.Positioner class="z-[1]!">
+					<Combobox.Content>
+						{#each collection.items as item (item.id)}
+							<Combobox.Item {item}>
+								<div class="flex items-center gap-2">
+									<Avatar class="size-6">
+										{#if item.image}
+											<Avatar.Image src={item.image} alt={item.name} />
+										{/if}
+										<Avatar.Fallback>{item.name.slice(0, 2).toUpperCase()}</Avatar.Fallback>
+									</Avatar>
+									<Combobox.ItemText>{item.name}</Combobox.ItemText>
+								</div>
+								<Combobox.ItemIndicator />
+							</Combobox.Item>
+						{/each}
+					</Combobox.Content>
+				</Combobox.Positioner>
+			</Portal>
+		</Combobox>
+		<button type="submit" class="btn preset-filled-primary-500" disabled={!selectedUserId}>Add</button>
 	</form>
 	{#if form?.error}
 		<p class="text-error-500 text-sm mt-2">{form.error}</p>
