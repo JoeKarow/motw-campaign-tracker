@@ -46,7 +46,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		zod4(hunterFormSchema)
 	);
 
-	return { hunter, canEdit, form };
+	return { hunter, canEdit, form, userRole: role, isDraft: raw.isDraft };
 };
 
 export const actions: Actions = {

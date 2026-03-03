@@ -7,9 +7,23 @@
 	import GearListEditor from '$lib/components/GearListEditor.svelte';
 	import BondListEditor from '$lib/components/BondListEditor.svelte';
 	import type { HunterMove, HunterGearItem, HunterBond } from '$lib/hunter-types';
+	import StatBadge from '$lib/components/StatBadge.svelte';
+	import { getPlaybook } from '$lib/playbooks';
+	import type { RatingLine } from '$lib/playbooks/types';
 
 	let { data }: { data: PageData } = $props();
 	let hunter = $derived(data.hunter);
+
+	let playbook = $derived(getPlaybook(hunter.playbook));
+	let ratingLines = $derived(playbook?.ratingLines ?? []);
+
+	const STAT_KEYS = ['charm', 'cool', 'sharp', 'tough', 'weird'] as const;
+
+	function formatRatingLine(line: RatingLine): string {
+		return STAT_KEYS
+			.map((k) => `${k.charAt(0).toUpperCase() + k.slice(1)} ${line[k] >= 0 ? '+' : ''}${line[k]}`)
+			.join(', ');
+	}
 
 	const { form, enhance, tainted, isTainted } = superForm(data.form, {
 		dataType: 'json',
@@ -21,12 +35,29 @@
 	);
 
 	const stats = [
-		{ label: 'Charm', base: 'charmBase' as const, mod: 'charmMod' as const },
-		{ label: 'Cool', base: 'coolBase' as const, mod: 'coolMod' as const },
-		{ label: 'Sharp', base: 'sharpBase' as const, mod: 'sharpMod' as const },
-		{ label: 'Tough', base: 'toughBase' as const, mod: 'toughMod' as const },
-		{ label: 'Weird', base: 'weirdBase' as const, mod: 'weirdMod' as const }
+		{ label: 'Charm', key: 'charm' as const, base: 'charmBase' as const, mod: 'charmMod' as const },
+		{ label: 'Cool', key: 'cool' as const, base: 'coolBase' as const, mod: 'coolMod' as const },
+		{ label: 'Sharp', key: 'sharp' as const, base: 'sharpBase' as const, mod: 'sharpMod' as const },
+		{ label: 'Tough', key: 'tough' as const, base: 'toughBase' as const, mod: 'toughMod' as const },
+		{ label: 'Weird', key: 'weird' as const, base: 'weirdBase' as const, mod: 'weirdMod' as const }
 	];
+
+	let selectedLineIndex = $derived(
+		ratingLines.findIndex((line) =>
+			stats.every((s) => line[s.key] === $form[s.base])
+		)
+	);
+
+	let canChangeRatings = $derived(data.isDraft || data.userRole === 'GM');
+
+	function onRatingLineChange(e: Event) {
+		const idx = parseInt((e.target as HTMLSelectElement).value, 10);
+		if (idx < 0 || idx >= ratingLines.length) return;
+		const line = ratingLines[idx];
+		for (const s of stats) {
+			$form[s.base] = line[s.key];
+		}
+	}
 </script>
 
 {#if data.canEdit}
@@ -63,36 +94,35 @@
 			</div>
 
 			<div class="card p-4">
-				<h3 class="h3">Stats</h3>
-				<div class="grid grid-cols-5 gap-2">
+				<h3 class="h3 mb-3">Stats</h3>
+				<div class="flex flex-wrap gap-2 mb-3">
 					{#each stats as stat (stat.label)}
 						{@const total = ($form[stat.base] as number) + ($form[stat.mod] as number)}
-						<div class="text-center">
-							<span class="text-xs text-surface-400 block">{stat.label}</span>
-							<span class="text-2xl font-bold block">{total >= 0 ? '+' : ''}{total}</span>
-							<label class="label mt-1">
-								<span class="label-text text-[0.6rem] text-surface-500">Base</span>
-								<input
-									class="input text-center text-sm"
-									type="number"
-									min="-3"
-									max="4"
-									bind:value={$form[stat.base]}
-								/>
-							</label>
-							<label class="label mt-1">
-								<span class="label-text text-[0.6rem] text-surface-500">Mod</span>
-								<input
-									class="input text-center text-sm"
-									type="number"
-									min="-3"
-									max="3"
-									bind:value={$form[stat.mod]}
-								/>
-							</label>
-						</div>
+						<StatBadge label={stat.label} value={total} />
 					{/each}
 				</div>
+				{#if ratingLines.length > 0}
+					<label class="label">
+						<span class="label-text">Ratings Line</span>
+						<select
+							class="select"
+							value={selectedLineIndex}
+							onchange={onRatingLineChange}
+							disabled={!canChangeRatings}
+						>
+							{#if selectedLineIndex === -1}
+								<option value={-1}>Custom</option>
+							{/if}
+							{#each ratingLines as line, i}
+								<option value={i}>{formatRatingLine(line)}</option>
+							{/each}
+						</select>
+					</label>
+				{/if}
+				{#each stats as stat}
+					<input type="hidden" bind:value={$form[stat.base]} />
+					<input type="hidden" bind:value={$form[stat.mod]} />
+				{/each}
 			</div>
 
 			<div class="card p-4 space-y-3">
@@ -156,14 +186,11 @@
 		</div>
 
 		<div class="card p-4">
-			<h3 class="h3">Stats</h3>
-			<div class="grid grid-cols-5 gap-2 text-center">
+			<h3 class="h3 mb-3">Stats</h3>
+			<div class="flex flex-wrap gap-2">
 				{#each stats as stat (stat.label)}
 					{@const total = (hunter[stat.base] as number) + (hunter[stat.mod] as number)}
-					<div>
-						<span class="text-xs text-surface-400">{stat.label}</span>
-						<p class="text-xl font-bold">{total >= 0 ? '+' : ''}{total}</p>
-					</div>
+					<StatBadge label={stat.label} value={total} />
 				{/each}
 			</div>
 		</div>
