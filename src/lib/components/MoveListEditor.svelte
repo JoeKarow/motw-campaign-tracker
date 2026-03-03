@@ -45,24 +45,29 @@
 		<p class="text-surface-400 text-sm">No moves added yet.</p>
 	{:else}
 		{#each items as move (move.id)}
-			<div class="card preset-outlined-surface-200-800 flex items-center justify-between gap-2 p-3">
-				<div class="flex flex-wrap items-center gap-2">
-					<span class="font-bold">{move.name}</span>
-					{#if move.rollType}
-						<span class="badge preset-filled-surface-200-800 text-xs">{formatRollType(move.rollType)}</span>
-					{/if}
-					{#if move.isCustom}
-						<span class="badge preset-filled-warning-500 text-xs">Custom</span>
-					{/if}
+			<div class="card preset-outlined-surface-200-800 flex flex-col gap-1 p-3">
+				<div class="flex items-start justify-between gap-2">
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="font-bold">{move.name}</span>
+						{#if move.rollType}
+							<span class="badge preset-filled-surface-200-800 text-xs">{formatRollType(move.rollType)}</span>
+						{/if}
+						{#if move.isCustom}
+							<span class="badge preset-filled-warning-500 text-xs">Custom</span>
+						{/if}
+					</div>
+					<div class="flex shrink-0 items-center gap-1">
+						<button type="button" class="btn btn-sm preset-tonal" onclick={() => editMove(move)}>
+							Edit
+						</button>
+						<button type="button" class="btn btn-sm preset-tonal-error" onclick={() => removeMove(move.id)}>
+							Remove
+						</button>
+					</div>
 				</div>
-				<div class="flex items-center gap-1">
-					<button type="button" class="btn btn-sm preset-tonal" onclick={() => editMove(move)}>
-						Edit
-					</button>
-					<button type="button" class="btn btn-sm preset-tonal-error" onclick={() => removeMove(move.id)}>
-						Remove
-					</button>
-				</div>
+				{#if move.description}
+					<p class="text-xs text-surface-500">{move.description}</p>
+				{/if}
 			</div>
 		{/each}
 	{/if}

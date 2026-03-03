@@ -48,7 +48,10 @@
 
 	function handleOpenChange(details: { open: boolean }) {
 		open = details.open;
-		if (details.open) {
+	}
+
+	$effect(() => {
+		if (open) {
 			if (item) {
 				prefillForm(item);
 			} else {
@@ -57,7 +60,7 @@
 		} else {
 			resetForm();
 		}
-	}
+	});
 
 	function toggleRange(r: WeaponRange) {
 		if (ranges.includes(r)) {

@@ -35,7 +35,10 @@
 
 	function handleOpenChange(details: { open: boolean }) {
 		open = details.open;
-		if (details.open) {
+	}
+
+	$effect(() => {
+		if (open) {
 			if (move) {
 				prefillForm(move);
 			} else {
@@ -44,7 +47,7 @@
 		} else {
 			resetForm();
 		}
-	}
+	});
 
 	function handleSave() {
 		if (!name.trim()) return;
