@@ -12,8 +12,46 @@
 	let editingName = $state(false);
 	let editingStatus = $state(false);
 	let statusFormEl: HTMLFormElement | undefined = $state();
+	let editingCause = $state(false);
+	let editingKilledBy = $state(false);
+	let killedByType = $state('UNKNOWN');
+	let killedByHunterId = $state('');
+	let killedByNpcId = $state('');
+	let killedByName = $state('');
 
 	const statuses = ['ALIVE', 'DEAD', 'MISSING', 'UNKNOWN'] as const;
+	const killedByTypes = ['HUNTER', 'NPC', 'MONSTER', 'ENVIRONMENT', 'UNKNOWN'] as const;
+	const killedByLabels: Record<string, string> = {
+		HUNTER: 'Hunter',
+		NPC: 'NPC',
+		MONSTER: 'Monster',
+		ENVIRONMENT: 'Environment',
+		UNKNOWN: 'Unknown'
+	};
+
+	let killedByDisplayText = $derived.by(() => {
+		if (!npc.killedByType) return '';
+		switch (npc.killedByType) {
+			case 'HUNTER':
+				return npc.killedByHunter?.name ?? 'Unknown hunter';
+			case 'NPC':
+				return npc.killedByNpc?.name ?? 'Unknown NPC';
+			case 'MONSTER':
+			case 'ENVIRONMENT':
+				return npc.killedByName ?? '';
+			case 'UNKNOWN':
+				return 'Unknown';
+			default:
+				return '';
+		}
+	});
+
+	function resetKilledByFields() {
+		killedByType = npc.killedByType ?? 'UNKNOWN';
+		killedByHunterId = npc.killedByHunterId ?? '';
+		killedByNpcId = npc.killedByNpcId ?? '';
+		killedByName = npc.killedByName ?? '';
+	}
 
 	function submitStatus(value: string) {
 		if (!statusFormEl) return;
@@ -110,6 +148,164 @@
 		{/if}
 	</div>
 </div>
+
+{#if npc.status === 'DEAD'}
+	<section class="mb-8">
+		<h2 class="h2 mb-2">Death Details</h2>
+
+		<div class="space-y-3">
+			<!-- Cause of Death -->
+			<div>
+				<span class="text-sm font-semibold text-surface-400">Cause of Death</span>
+				{#if editingCause && isGM}
+					<form
+						method="POST"
+						action="?/update"
+						use:enhance={() => {
+							return async ({ update }) => {
+								editingCause = false;
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="name" value={npc.name} />
+						<input type="hidden" name="status" value={npc.status} />
+						<input type="hidden" name="killedByType" value={npc.killedByType ?? ''} />
+						<input type="hidden" name="killedByHunterId" value={npc.killedByHunterId ?? ''} />
+						<input type="hidden" name="killedByNpcId" value={npc.killedByNpcId ?? ''} />
+						<input type="hidden" name="killedByName" value={npc.killedByName ?? ''} />
+						<input
+							class="input mt-1"
+							name="causeOfDeath"
+							value={npc.causeOfDeath ?? ''}
+							placeholder="Describe the cause of death..."
+							autofocus
+							onkeydown={(e) => {
+								if (e.key === 'Escape') {
+									e.preventDefault();
+									editingCause = false;
+								}
+							}}
+							onblur={(e) => e.currentTarget.form?.requestSubmit()}
+						/>
+					</form>
+				{:else if isGM}
+					<button
+						type="button"
+						class="block mt-1 cursor-pointer hover:text-primary-400 transition-colors {npc.causeOfDeath ? 'text-surface-300' : 'text-surface-500 italic'}"
+						onclick={() => (editingCause = true)}
+					>
+						{npc.causeOfDeath || 'Unknown cause of death'}
+					</button>
+				{:else}
+					<p class="mt-1 text-surface-300">{npc.causeOfDeath || 'Unknown cause of death'}</p>
+				{/if}
+			</div>
+
+			<!-- Killed By -->
+			<div>
+				<span class="text-sm font-semibold text-surface-400">Killed By</span>
+				{#if editingKilledBy && isGM}
+					<form
+						method="POST"
+						action="?/update"
+						use:enhance={() => {
+							return async ({ update }) => {
+								editingKilledBy = false;
+								await update();
+							};
+						}}
+						class="mt-1 space-y-2"
+					>
+						<input type="hidden" name="name" value={npc.name} />
+						<input type="hidden" name="status" value={npc.status} />
+						<input type="hidden" name="causeOfDeath" value={npc.causeOfDeath ?? ''} />
+
+						<select
+							class="select"
+							name="killedByType"
+							bind:value={killedByType}
+							onchange={() => {
+								killedByHunterId = '';
+								killedByNpcId = '';
+								killedByName = '';
+							}}
+						>
+							{#each killedByTypes as type}
+								<option value={type}>{killedByLabels[type]}</option>
+							{/each}
+						</select>
+
+						{#if killedByType === 'HUNTER'}
+							<select class="select" name="killedByHunterId" bind:value={killedByHunterId}>
+								<option value="">Select hunter...</option>
+								{#each data.hunters as hunter (hunter.id)}
+									<option value={hunter.id}>{hunter.name}</option>
+								{/each}
+							</select>
+						{:else if killedByType === 'NPC'}
+							<select class="select" name="killedByNpcId" bind:value={killedByNpcId}>
+								<option value="">Select NPC...</option>
+								{#each data.otherNpcs as other (other.id)}
+									<option value={other.id}>{other.name}</option>
+								{/each}
+							</select>
+						{:else if killedByType === 'MONSTER'}
+							<input
+								class="input"
+								name="killedByName"
+								placeholder="Monster name..."
+								bind:value={killedByName}
+							/>
+						{:else if killedByType === 'ENVIRONMENT'}
+							<input
+								class="input"
+								name="killedByName"
+								placeholder="Environmental cause..."
+								bind:value={killedByName}
+							/>
+						{/if}
+
+						<div class="flex gap-2">
+							<button type="submit" class="btn btn-sm preset-filled-primary-500">Save</button>
+							<button
+								type="button"
+								class="btn btn-sm preset-outlined-surface-300-700"
+								onclick={() => {
+									resetKilledByFields();
+									editingKilledBy = false;
+								}}
+							>Cancel</button>
+						</div>
+					</form>
+				{:else if isGM}
+					<button
+						type="button"
+						class="block mt-1 cursor-pointer hover:text-primary-400 transition-colors {killedByDisplayText ? 'text-surface-300' : 'text-surface-500 italic'}"
+						onclick={() => {
+							resetKilledByFields();
+							editingKilledBy = true;
+						}}
+					>
+						{#if npc.killedByType}
+							{killedByLabels[npc.killedByType]}{killedByDisplayText && npc.killedByType !== 'UNKNOWN' ? `: ${killedByDisplayText}` : ''}
+						{:else}
+							Click to set...
+						{/if}
+					</button>
+				{:else}
+					<p class="mt-1 text-surface-300">
+						{#if npc.killedByType}
+							{killedByLabels[npc.killedByType]}{killedByDisplayText && npc.killedByType !== 'UNKNOWN' ? `: ${killedByDisplayText}` : ''}
+						{:else}
+							Unknown
+						{/if}
+					</p>
+				{/if}
+			</div>
+		</div>
+	</section>
+{/if}
 
 <section class="mb-8">
 	<h2 class="h2 mb-2">Description</h2>

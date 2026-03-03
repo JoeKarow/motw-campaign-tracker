@@ -12,9 +12,20 @@ export const PATCH: RequestHandler = async ({ params, locals, request }) => {
 		throw error(400, 'Invalid status');
 	}
 
+	const clearDeathFields =
+		status !== 'DEAD'
+			? {
+					causeOfDeath: null,
+					killedByType: null,
+					killedByHunterId: null,
+					killedByNpcId: null,
+					killedByName: null
+				}
+			: {};
+
 	const npc = await prisma.npc.update({
 		where: { id: params.nid },
-		data: { status },
+		data: { status, ...clearDeathFields },
 		emit: true
 	});
 

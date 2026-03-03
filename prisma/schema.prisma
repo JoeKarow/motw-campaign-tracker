@@ -190,17 +190,33 @@ enum NpcStatus {
   UNKNOWN
 }
 
-model Npc {
-  id         String    @id @default(cuid())
-  name       String
-  status     NpcStatus @default(ALIVE)
-  campaignId String
+enum NpcKilledByType {
+  HUNTER
+  NPC
+  MONSTER
+  ENVIRONMENT
+  UNKNOWN
+}
 
-  campaign      Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  details       NpcDetail[]
-  relationships NpcRelationship[] @relation("subject")
-  relatedTo     NpcRelationship[] @relation("object")
-  appearances   NpcAppearance[]
+model Npc {
+  id               String           @id @default(cuid())
+  name             String
+  status           NpcStatus        @default(ALIVE)
+  campaignId       String
+  causeOfDeath     String?
+  killedByType     NpcKilledByType?
+  killedByHunterId String?
+  killedByNpcId    String?
+  killedByName     String?
+
+  campaign       Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  details        NpcDetail[]
+  relationships  NpcRelationship[] @relation("subject")
+  relatedTo      NpcRelationship[] @relation("object")
+  appearances    NpcAppearance[]
+  killedByHunter Hunter?           @relation("killedByHunter", fields: [killedByHunterId], references: [id], onDelete: SetNull)
+  killedByNpc    Npc?              @relation("killedByNpc", fields: [killedByNpcId], references: [id], onDelete: SetNull)
+  killedNpcs     Npc[]             @relation("killedByNpc")
 }
 
 enum NpcDetailKind {
@@ -289,6 +305,7 @@ model Hunter {
   bonds            HunterBond[]            @relation("hunterBonds")
   bondTargets      HunterBond[]            @relation("bondTargets")
   playbookFeatures HunterPlaybookFeature[]
+  npcKills         Npc[]                   @relation("killedByHunter")
 }
 
 // ── Hunter relational sub-models ────────────────────────────────

@@ -2,7 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
 import { requireGM } from '$lib/server/campaign-auth';
-import type { NpcStatus } from '$lib/generated/prisma/enums';
+import type { NpcStatus, NpcKilledByType } from '$lib/generated/prisma/enums';
 
 export const load: PageServerLoad = async ({ params, parent }) => {
 	const { campaign } = await parent();
@@ -17,7 +17,9 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 				include: {
 					session: { include: { mystery: true } }
 				}
-			}
+			},
+			killedByHunter: true,
+			killedByNpc: true
 		}
 	});
 
@@ -25,7 +27,7 @@ export const load: PageServerLoad = async ({ params, parent }) => {
 
 	const otherNpcs = campaign.npcs.filter((n) => n.id !== npc.id);
 
-	return { npc, otherNpcs };
+	return { npc, otherNpcs, hunters: campaign.hunters };
 };
 
 export const actions: Actions = {
@@ -33,12 +35,42 @@ export const actions: Actions = {
 		await requireGM(locals.user?.id, params.id);
 		const formData = await request.formData();
 
+		const status = formData.get('status')?.toString() as NpcStatus;
+		const isDead = status === 'DEAD';
+
+		const deathFields = isDead
+			? {
+					causeOfDeath: formData.get('causeOfDeath')?.toString()?.trim() || null,
+					killedByType: (formData.get('killedByType')?.toString() as NpcKilledByType) || null,
+					killedByHunterId:
+						formData.get('killedByType') === 'HUNTER'
+							? formData.get('killedByHunterId')?.toString() || null
+							: null,
+					killedByNpcId:
+						formData.get('killedByType') === 'NPC'
+							? formData.get('killedByNpcId')?.toString() || null
+							: null,
+					killedByName:
+						formData.get('killedByType') === 'MONSTER' ||
+						formData.get('killedByType') === 'ENVIRONMENT'
+							? formData.get('killedByName')?.toString()?.trim() || null
+							: null
+				}
+			: {
+					causeOfDeath: null,
+					killedByType: null,
+					killedByHunterId: null,
+					killedByNpcId: null,
+					killedByName: null
+				};
+
 		await prisma.npc.update({
 			where: { id: params.nid },
 			emit: true,
 			data: {
 				name: formData.get('name')?.toString()?.trim() || undefined,
-				status: formData.get('status')?.toString() as NpcStatus
+				status,
+				...deathFields
 			}
 		});
 
