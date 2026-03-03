@@ -2,11 +2,15 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { admin } from 'better-auth/plugins';
 import { prisma } from '$lib/server/prisma';
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, BETTER_AUTH_URL } from '$env/static/private';
+import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$env/static/private';
+
+const authOrigins = ['http://localhost:5173', 'https://motw.jk3.me', 'https://*.discordsays.com'];
 
 export const auth = betterAuth({
-	baseURL: BETTER_AUTH_URL,
-	trustedOrigins: ['http://localhost:5173', 'https://motw.jk3.me', 'https://*.discordsays.com'],
+	baseURL: {
+		allowedHosts: authOrigins
+	},
+	trustedOrigins: authOrigins,
 	database: prismaAdapter(prisma, {
 		provider: 'postgresql'
 	}),
