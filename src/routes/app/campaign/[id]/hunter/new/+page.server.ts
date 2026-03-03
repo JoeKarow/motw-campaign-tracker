@@ -10,15 +10,10 @@ import type { WeaponRange } from '$lib/hunter-types';
 export const load: PageServerLoad = async ({ params, locals }) => {
 	await requireCampaignMember(locals.user?.id, params.id);
 
-	const existingHunter = await prisma.hunter.findFirst({
-		where: { userId: locals.user!.id, campaignId: params.id },
+	const draftHunter = await prisma.hunter.findFirst({
+		where: { userId: locals.user!.id, campaignId: params.id, isDraft: true },
 		include: hunterWithRelations,
 	});
-
-	// If finalized hunter exists, redirect to their page
-	if (existingHunter && !existingHunter.isDraft) {
-		throw redirect(303, `/app/campaign/${params.id}/hunter/${existingHunter.id}`);
-	}
 
 	// Get all campaign hunters for bond target dropdown
 	const campaignHunters = await prisma.hunter.findMany({
@@ -29,7 +24,7 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 
 	return {
 		campaignId: params.id,
-		draft: existingHunter ? parseHunter(existingHunter) : null,
+		draft: draftHunter ? parseHunter(draftHunter) : null,
 		campaignHunters,
 	};
 };
@@ -47,12 +42,6 @@ export const actions: Actions = {
 
 		const playbook = getPlaybook(playbookId);
 		if (!playbook) return fail(400, { error: 'Invalid playbook' });
-
-		// Check for existing hunter
-		const existing = await prisma.hunter.findFirst({
-			where: { userId: locals.user!.id, campaignId: params.id },
-		});
-		if (existing) return fail(400, { error: 'You already have a hunter in this campaign' });
 
 		const pronouns = formData.get('pronouns')?.toString()?.trim() || null;
 		const look = formData.get('look')?.toString()?.trim() || null;

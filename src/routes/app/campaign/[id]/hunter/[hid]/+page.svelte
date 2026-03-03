@@ -1,6 +1,7 @@
 <!-- svelte-ignore state_referenced_locally -->
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { enhance as formEnhance } from '$app/forms';
 	import { superForm } from 'sveltekit-superforms';
 	import StatusRating from '$lib/components/StatusRating.svelte';
 	import MoveListEditor from '$lib/components/MoveListEditor.svelte';
@@ -49,6 +50,8 @@
 	);
 
 	let canChangeRatings = $derived(data.isDraft || data.userRole === 'GM');
+
+	let showDeleteConfirm = $state(false);
 
 	function onRatingLineChange(e: Event) {
 		const idx = parseInt((e.target as HTMLSelectElement).value, 10);
@@ -169,6 +172,34 @@
 			</div>
 		</div>
 	</form>
+
+	<div class="card p-4 mt-6 border border-error-500/30">
+		<h3 class="h3 text-error-500">Danger Zone</h3>
+		{#if !showDeleteConfirm}
+			<p class="text-sm text-surface-400 mt-2">Permanently delete this hunter and all associated data.</p>
+			<button
+				type="button"
+				class="btn preset-outlined-error-500 mt-3"
+				onclick={() => (showDeleteConfirm = true)}
+			>
+				Delete Hunter
+			</button>
+		{:else}
+			<p class="text-sm text-error-400 mt-2">Are you sure? This cannot be undone.</p>
+			<div class="flex gap-2 mt-3">
+				<form method="POST" action="?/delete" use:formEnhance>
+					<button type="submit" class="btn preset-filled-error-500">Confirm Delete</button>
+				</form>
+				<button
+					type="button"
+					class="btn preset-outlined-surface-500"
+					onclick={() => (showDeleteConfirm = false)}
+				>
+					Cancel
+				</button>
+			</div>
+		{/if}
+	</div>
 {:else}
 	<h1 class="h1">{hunter.name}</h1>
 	<p class="text-xs text-surface-400 mb-6">

@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { prisma } from '$lib/server/prisma';
 import { requireCampaignMember } from '$lib/server/campaign-auth';
@@ -127,5 +127,19 @@ export const actions: Actions = {
 		]);
 
 		return { form };
+	},
+
+	delete: async ({ params, locals }) => {
+		const { role } = await requireCampaignMember(locals.user?.id, params.id);
+
+		const hunter = await prisma.hunter.findUnique({ where: { id: params.hid } });
+		if (!hunter) throw error(404, 'Hunter not found');
+		if (locals.user!.id !== hunter.userId && role !== 'GM') {
+			throw error(403, 'You can only delete your own hunter');
+		}
+
+		await prisma.hunter.delete({ where: { id: params.hid } });
+
+		throw redirect(303, `/app/campaign/${params.id}/hunter`);
 	}
 };
