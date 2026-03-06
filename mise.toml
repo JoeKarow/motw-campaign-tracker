@@ -1,5 +1,5 @@
 [tools]
-node = "v22.22.0"
+node = "22.22.1"
 bun = "latest"
 "npm:svelte-language-server" = "latest"
 
