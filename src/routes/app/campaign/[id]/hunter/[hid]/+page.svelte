@@ -128,20 +128,23 @@
 									<p class="text-sm font-semibold">{category.label}</p>
 									<div class="flex flex-wrap gap-2">
 										{#each category.options as option (option)}
-											<button
-												type="button"
-												class="chip {!isCustom && currentValue === option
-													? 'preset-filled-primary-500'
-													: 'preset-outlined-surface-300-700'}"
-												onclick={() => {
-													customMode[category.label] = false;
-													lookSelections[category.label] = option;
-												}}
-											>
-												{option}
-											</button>
+											{#if data.isDraft || (!isCustom && currentValue === option)}
+												<button
+													type="button"
+													class="chip {!isCustom && currentValue === option
+														? 'preset-filled-primary-500'
+														: 'preset-outlined-surface-300-700'}"
+													onclick={() => {
+														customMode[category.label] = false;
+														lookSelections[category.label] = option;
+													}}
+													disabled={!data.isDraft}
+												>
+													{option}
+												</button>
+											{/if}
 										{/each}
-										{#if category.allowCustom}
+										{#if category.allowCustom && (data.isDraft || isCustom)}
 											<button
 												type="button"
 												class="chip {isCustom
@@ -151,6 +154,7 @@
 													customMode[category.label] = true;
 													lookSelections[category.label] = '';
 												}}
+												disabled={!data.isDraft}
 											>
 												Custom
 											</button>
@@ -165,6 +169,7 @@
 											oninput={(e) => {
 												lookSelections[category.label] = e.currentTarget.value;
 											}}
+											disabled={!data.isDraft}
 											autofocus
 										/>
 									{/if}
