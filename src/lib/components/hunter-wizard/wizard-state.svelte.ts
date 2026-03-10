@@ -1,6 +1,7 @@
 import { getPlaybook, allPlaybooks } from '$lib/playbooks/index';
 import type { PlaybookDefinition, PlaybookSectionDefinition } from '$lib/playbooks/types';
 import type { TypedHunter } from '$lib/hunter-types';
+import { parseLookString } from '$lib/look-utils';
 
 // ── Step definitions ────────────────────────────────────────────
 
@@ -150,14 +151,9 @@ export function hydrateFromDraft(state: WizardState, draft: TypedHunter) {
 
 	// Parse look string back into selections
 	if (draft.look) {
-		const parts = draft.look.split(', ');
 		const playbook = getPlaybook(draft.playbook);
 		if (playbook) {
-			playbook.looks.forEach((cat, i) => {
-				if (parts[i]) {
-					state.lookSelections[cat.label] = parts[i];
-				}
-			});
+			state.lookSelections = parseLookString(draft.look, playbook.looks);
 		}
 	}
 

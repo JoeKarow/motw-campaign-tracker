@@ -62,6 +62,10 @@ Campaign → Mystery → GameSession → Scene → Clue. NPCs and Hunters belong
 - **Testing**: Vitest + @testing-library/svelte (no tests written yet)
 - **Deploy**: Docker multi-stage (oven/bun), docker-compose with Postgres
 
+## Code Style
+
+- **Indentation**: All source files use **tabs**, not spaces. When using the Edit tool, ensure `old_string` and `new_string` use tab characters for indentation to match the file contents exactly.
+
 ## Notes
 
 - `prisma-emitter generate` runs via postinstall — regenerate after schema changes (output: `src/lib/generated/prisma/`)

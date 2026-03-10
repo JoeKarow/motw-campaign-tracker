@@ -11,6 +11,7 @@
 	import StatBadge from '$lib/components/StatBadge.svelte';
 	import { getPlaybook } from '$lib/playbooks';
 	import type { RatingLine } from '$lib/playbooks/types';
+	import { parseLookString, buildLookString } from '$lib/look-utils';
 
 	let { data }: { data: PageData } = $props();
 	let hunter = $derived(data.hunter);
@@ -53,6 +54,18 @@
 
 	let showDeleteConfirm = $state(false);
 
+	let lookSelections = $state<Record<string, string>>(
+		playbook && $form.look ? parseLookString($form.look, playbook.looks) : {}
+	);
+
+	let customMode = $state<Record<string, boolean>>({});
+
+	$effect(() => {
+		if (playbook) {
+			$form.look = buildLookString(lookSelections, playbook.looks);
+		}
+	});
+
 	function onRatingLineChange(e: Event) {
 		const idx = parseInt((e.target as HTMLSelectElement).value, 10);
 		if (idx < 0 || idx >= ratingLines.length) return;
@@ -67,7 +80,16 @@
 	<div class="flex items-start justify-between gap-4 mb-6">
 		<div class="flex items-center gap-3">
 			<div>
-				<h1 class="h1">{hunter.name}</h1>
+				{#if data.isDraft}
+				<input
+					class="h1 bg-transparent border-none outline-none w-full"
+					bind:value={$form.name}
+					required
+					placeholder="Hunter name"
+				/>
+			{:else}
+				<h1 class="h1">{$form.name}</h1>
+			{/if}
 				<p class="text-xs text-surface-400">
 					Playbook: {playbook?.displayName ?? hunter.playbook} | Player: {hunter.user.name}
 				</p>
@@ -92,92 +114,147 @@
 
 	<form id="hunter-update-form" method="POST" action="?/update" use:enhance>
 
-		<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
-			<div class="card p-4">
-				<h3 class="h3">Identity</h3>
-				<label class="label mb-4">
-					<span class="label-text">Name</span>
-					<input class="input" name="name" bind:value={$form.name} required />
-				</label>
-				<label class="label mb-4">
-					<span class="label-text">Look</span>
-					<textarea class="textarea" name="look" rows="2" bind:value={$form.look}></textarea>
-				</label>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+			<div class="space-y-4">
+				<div class="card p-4">
+					<h3 class="h3">Identity</h3>
+					{#if playbook}
+						<div class="space-y-3 mb-4">
+							<span class="label-text">Look</span>
+							{#each playbook.looks as category (category.label)}
+								{@const currentValue = lookSelections[category.label] ?? ''}
+								{@const isCustom = customMode[category.label] ?? (currentValue !== '' && !category.options.includes(currentValue))}
+								<div class="space-y-1">
+									<p class="text-sm font-semibold">{category.label}</p>
+									<div class="flex flex-wrap gap-2">
+										{#each category.options as option (option)}
+											<button
+												type="button"
+												class="chip {!isCustom && currentValue === option
+													? 'preset-filled-primary-500'
+													: 'preset-outlined-surface-300-700'}"
+												onclick={() => {
+													customMode[category.label] = false;
+													lookSelections[category.label] = option;
+												}}
+											>
+												{option}
+											</button>
+										{/each}
+										{#if category.allowCustom}
+											<button
+												type="button"
+												class="chip {isCustom
+													? 'preset-filled-primary-500'
+													: 'preset-outlined-surface-300-700'}"
+												onclick={() => {
+													customMode[category.label] = true;
+													lookSelections[category.label] = '';
+												}}
+											>
+												Custom
+											</button>
+										{/if}
+									</div>
+									{#if isCustom}
+										<input
+											class="input max-w-xs"
+											type="text"
+											placeholder="Custom {category.label.toLowerCase()}"
+											value={currentValue}
+											oninput={(e) => {
+												lookSelections[category.label] = e.currentTarget.value;
+											}}
+											autofocus
+										/>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<label class="label mb-4">
+							<span class="label-text">Look</span>
+							<textarea class="textarea" name="look" rows="2" bind:value={$form.look}></textarea>
+						</label>
+					{/if}
+				</div>
+
+				<div class="card p-4 space-y-3">
+					<h3 class="h3">Status</h3>
+					<StatusRating
+						value={$form.harm as number}
+						max={hunter.harmMax}
+						onchange={(v: number) => ($form.harm = v)}
+						label="Harm"
+						variant="harm"
+						name="harm"
+					/>
+					<StatusRating
+						value={$form.luck as number}
+						max={7}
+						onchange={(v: number) => ($form.luck = v)}
+						label="Luck"
+						variant="luck"
+						name="luck"
+					/>
+					<StatusRating
+						value={$form.xp as number}
+						max={5}
+						onchange={(v: number) => ($form.xp = v)}
+						label="XP"
+						variant="xp"
+						name="xp"
+					/>
+				</div>
+
+				<div class="card p-4">
+					<h3 class="h3">Gear</h3>
+					<GearListEditor bind:items={$form.gear as HunterGearItem[]} />
+				</div>
 			</div>
 
-			<div class="card p-4">
-				<h3 class="h3 mb-3">Stats</h3>
-				<div class="flex flex-wrap gap-2 mb-3">
-					{#each stats as stat (stat.label)}
-						{@const total = ($form[stat.base] as number) + ($form[stat.mod] as number)}
-						<StatBadge label={stat.label} value={total} />
+			<div class="space-y-4">
+				<div class="card p-4">
+					<h3 class="h3 mb-3">Stats</h3>
+					<div class="flex flex-wrap gap-2 mb-3">
+						{#each stats as stat (stat.label)}
+							{@const total = ($form[stat.base] as number) + ($form[stat.mod] as number)}
+							<StatBadge label={stat.label} value={total} />
+						{/each}
+					</div>
+					{#if ratingLines.length > 0 && data.isDraft}
+						<label class="label">
+							<span class="label-text">Ratings Line</span>
+							<select
+								class="select"
+								value={selectedLineIndex}
+								onchange={onRatingLineChange}
+								disabled={!canChangeRatings}
+							>
+								{#if selectedLineIndex === -1}
+									<option value={-1}>Custom</option>
+								{/if}
+								{#each ratingLines as line, i}
+									<option value={i}>{formatRatingLine(line)}</option>
+								{/each}
+							</select>
+						</label>
+					{/if}
+					{#each stats as stat}
+						<input type="hidden" bind:value={$form[stat.base]} />
+						<input type="hidden" bind:value={$form[stat.mod]} />
 					{/each}
 				</div>
-				{#if ratingLines.length > 0}
-					<label class="label">
-						<span class="label-text">Ratings Line</span>
-						<select
-							class="select"
-							value={selectedLineIndex}
-							onchange={onRatingLineChange}
-							disabled={!canChangeRatings}
-						>
-							{#if selectedLineIndex === -1}
-								<option value={-1}>Custom</option>
-							{/if}
-							{#each ratingLines as line, i}
-								<option value={i}>{formatRatingLine(line)}</option>
-							{/each}
-						</select>
-					</label>
-				{/if}
-				{#each stats as stat}
-					<input type="hidden" bind:value={$form[stat.base]} />
-					<input type="hidden" bind:value={$form[stat.mod]} />
-				{/each}
-			</div>
 
-			<div class="card p-4 space-y-3">
-				<h3 class="h3">Status</h3>
-				<StatusRating
-					value={$form.harm as number}
-					max={hunter.harmMax}
-					onchange={(v: number) => ($form.harm = v)}
-					label="Harm"
-					variant="harm"
-					name="harm"
-				/>
-				<StatusRating
-					value={$form.luck as number}
-					max={7}
-					onchange={(v: number) => ($form.luck = v)}
-					label="Luck"
-					variant="luck"
-					name="luck"
-				/>
-				<StatusRating
-					value={$form.xp as number}
-					max={5}
-					onchange={(v: number) => ($form.xp = v)}
-					label="XP"
-					variant="xp"
-					name="xp"
-				/>
-			</div>
+				<div class="card p-4">
+					<h3 class="h3">Moves</h3>
+					<MoveListEditor bind:items={$form.moves as HunterMove[]} />
+				</div>
 
-			<div class="card p-4">
-				<h3 class="h3">Moves</h3>
-				<MoveListEditor bind:items={$form.moves as HunterMove[]} />
-			</div>
-
-			<div class="card p-4">
-				<h3 class="h3">Gear</h3>
-				<GearListEditor bind:items={$form.gear as HunterGearItem[]} />
-			</div>
-
-			<div class="card p-4">
-				<h3 class="h3">Bonds</h3>
-				<BondListEditor bind:items={$form.bonds as HunterBond[]} hunters={otherHunters} />
+				<div class="card p-4">
+					<h3 class="h3">Bonds</h3>
+					<BondListEditor bind:items={$form.bonds as HunterBond[]} hunters={otherHunters} />
+				</div>
 			</div>
 		</div>
 	</form>
@@ -215,39 +292,53 @@
 		Playbook: {playbook?.displayName ?? hunter.playbook} | Player: {hunter.user.name}
 	</p>
 
-	<div class="grid gap-4 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
-		<div class="card p-4">
-			<h3 class="h3">Identity</h3>
-			<p><strong>Name:</strong> {hunter.name}</p>
-			{#if hunter.look}
-				<p><strong>Look:</strong> {hunter.look}</p>
-			{/if}
-		</div>
-
-		<div class="card p-4">
-			<h3 class="h3 mb-3">Stats</h3>
-			<div class="flex flex-wrap gap-2">
-				{#each stats as stat (stat.label)}
-					{@const total = (hunter[stat.base] as number) + (hunter[stat.mod] as number)}
-					<StatBadge label={stat.label} value={total} />
-				{/each}
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+		<div class="space-y-4">
+			<div class="card p-4">
+				<h3 class="h3">Identity</h3>
+				<p><strong>Name:</strong> {hunter.name}</p>
+				{#if hunter.look}
+					{@const lookMap = playbook ? parseLookString(hunter.look, playbook.looks) : null}
+					{#if lookMap && Object.keys(lookMap).length > 0}
+						<div class="mt-2 space-y-1">
+							<strong>Look:</strong>
+							{#each Object.entries(lookMap) as [category, value]}
+								<p class="text-sm"><span class="text-surface-400">{category}:</span> {value}</p>
+							{/each}
+						</div>
+					{:else}
+						<p><strong>Look:</strong> {hunter.look}</p>
+					{/if}
+				{/if}
 			</div>
 		</div>
 
-		<div class="card p-4">
-			<h3 class="h3">Status</h3>
-			<div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2 text-center">
-				<div>
-					<span class="text-xs text-surface-400">Harm</span>
-					<p class="text-xl font-bold">{hunter.harm}/{hunter.harmMax}</p>
+		<div class="space-y-4">
+			<div class="card p-4">
+				<h3 class="h3 mb-3">Stats</h3>
+				<div class="flex flex-wrap gap-2">
+					{#each stats as stat (stat.label)}
+						{@const total = (hunter[stat.base] as number) + (hunter[stat.mod] as number)}
+						<StatBadge label={stat.label} value={total} />
+					{/each}
 				</div>
-				<div>
-					<span class="text-xs text-surface-400">Luck</span>
-					<p class="text-xl font-bold">{hunter.luck}</p>
-				</div>
-				<div>
-					<span class="text-xs text-surface-400">XP</span>
-					<p class="text-xl font-bold">{hunter.xp}</p>
+			</div>
+
+			<div class="card p-4">
+				<h3 class="h3">Status</h3>
+				<div class="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-2 text-center">
+					<div>
+						<span class="text-xs text-surface-400">Harm</span>
+						<p class="text-xl font-bold">{hunter.harm}/{hunter.harmMax}</p>
+					</div>
+					<div>
+						<span class="text-xs text-surface-400">Luck</span>
+						<p class="text-xl font-bold">{hunter.luck}</p>
+					</div>
+					<div>
+						<span class="text-xs text-surface-400">XP</span>
+						<p class="text-xl font-bold">{hunter.xp}</p>
+					</div>
 				</div>
 			</div>
 		</div>
