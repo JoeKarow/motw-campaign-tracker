@@ -37,7 +37,7 @@
 		"@skeletonlabs/skeleton": "4.13.0",
 		"@skeletonlabs/skeleton-svelte": "4.13.0",
 		"@tailwindcss/vite": "4.2.1",
-		"better-auth": "1.5.5",
+		"better-auth": "1.6.2",
 		"prisma-extension-emitter": "2.1.14",
 		"sveltekit-superforms": "2.30.0",
 		"tailwindcss": "4.2.1",
